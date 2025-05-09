@@ -1,8 +1,9 @@
 local utils = require "extras.utils"
 
 _G.directories = _G.directories or {}
-_G.directories_devices = _G.directories_devices or {}
+_G.directories_devices = {}
 _G.directories_all = _G.directories_all or {}
+_G.directories_history = _G.directories_history or {}
 
 local windows_dirs = {
   { path = utils.home .. "\\vaults", alias = "Obsidian" },

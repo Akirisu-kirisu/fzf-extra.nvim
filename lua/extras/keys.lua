@@ -1,36 +1,68 @@
-local actions = require "fzf-lua.actions"
-local fzf_lua = require("fzf-lua")
-local utils = require("extras.utils")
-local ui = require("extras.ui")
-local extra_actions = require("extras.actions")
---
--- -- fzf-extras/lua/extras/keys.lua
--- require("extras.actions")
--- -- require("extras.utils")
--- -- require("extras.handlers")
--- -- Avoid recursive load unless this file is defining mappings
--- -- and not relying on itself
--- -- require("extras.keys") -- ⚠️ don't require self
---
---
--- -- define your keymaps here if needed
--- -- vim.keymap.set("n", "<leader>ff", require("fzf-lua").files, { desc = "FZF Files" })
---
---
--- utils.mapcombo("lua", handlers.select_directory_global_mfe, "mxe") -- visible output
--- utils.mapcombo("lua", handlers.select_directory_global_mfe, "mxe", "n", { silent = false }) -- visible output
--- Map our provider to a user command ':Directories'
-vim.cmd [[command! -nargs=* Directories lua _G.select_directory_global_mfe()]]
--- Keybind
-vim.keymap.set("n", "mxe", _G.select_directory_global_mfe)
+-- local mappings = {
+-- 	{
+-- 		cmd = "Directories",
+-- 		func = "select_directory_global_mfe",
+-- 		key = "mxe",
+-- 		description = "Select global directory for MFE",
+-- 	},
+-- 	{ cmd = "Directories", func = "select_main_menu_mfs", key = "mxs", description = "Select main menu for MFS" },
+-- 	{
+-- 		cmd = "Directories",
+-- 		func = "main_menu_devices_mfd",
+-- 		key = "mxd",
+-- 		description = "Select main menu for devices MFD",
+-- 	},
+-- 	{ cmd = "Directories", func = "select_filePath", key = "mxc", description = "Select file path" },
+-- 	{ cmd = "Directories", func = "select_local_directories", key = "mxw", description = "Select local directories" },
+-- 	{ cmd = "Directories", func = "select_hidden_directories", key = "mxh", description = "Select hidden directories" },
+-- 	{
+-- 		cmd = "Directories",
+-- 		func = "select_history_directories",
+-- 		key = "mxi",
+-- 		description = "Select history directories",
+-- 	},
+-- }
 
-vim.cmd [[command! -nargs=* Directories lua _G.select_main_menu_mfs()]]
--- Keybind
-vim.keymap.set("n", "mxs", _G.select_main_menu_mfs)
+local mappings = {
+	{
+		cmd = "Directories",
+		func = "select_directory_global_mfe",
+		key = "mfe",
+		description = "Select global directory for MFE",
+	},
+	{ cmd = "Directories", func = "select_main_menu_mfs", key = "mfs", description = "Select main menu for MFS" },
+	{
+		cmd = "Directories",
+		func = "main_menu_devices_mfd",
+		key = "mfd",
+		description = "Select main menu for devices MFD",
+	},
+	{ cmd = "Directories", func = "select_filePath", key = "mfc", description = "Select file path" },
+	{ cmd = "Directories", func = "select_local_directories", key = "mfw", description = "Select local directories" },
+	{ cmd = "Directories", func = "select_local_directories", key = "<leader>fw", description = "Select local directories" },
+	{ cmd = "Directories", func = "select_hidden_directories", key = "mfh", description = "Select hidden directories" },
+	{
+		cmd = "Directories",
+		func = "select_history_directories",
+		key = "mfi",
+		description = "Select history directories",
+	},
+}
 
-vim.cmd [[command! -nargs=* Directories lua _G.main_menu_devices_mfd()]]
--- Keybind
-vim.keymap.set("n", "mxd", _G.main_menu_devices_mfd)
---
+for _, mapping in ipairs(mappings) do
+	-- Check if the function is globally available
+	local func = _G[mapping.func]
+	if func then
+		-- Register the command
+		vim.cmd(string.format([[command! -nargs=* %s lua %s()]], mapping.cmd, mapping.func))
 
--- print('test')
+		-- Set the keybind and print description
+		vim.keymap.set("n", mapping.key, function()
+			print("Executing: " .. mapping.description)
+			func() -- Execute the function
+		end, {desc = mapping.description})
+	else
+		-- Print an error message if the function is not found
+		print("Error: Function '" .. mapping.func .. "' is not defined.")
+	end
+end

@@ -1,36 +1,60 @@
 local utils = require("extras.utils")
+local history_utils = require("extras.history-utils.history-utils")
 
 local M = {}
 
 function M.open_dir(selected)
-	local path = utils.selected_path(selected)
+	local selected_path = utils.selected_path(selected)
 
-	if not path then
+	if not selected_path then
 		return print("Could not determine the directory from the selected string.")
 	end
 
-	if vim.fn.isdirectory(path) ~= 1 then
-		return print("The path is not a valid directory.")
+	if vim.fn.isdirectory(selected_path) == 1 then
+		vim.cmd("cd " .. selected_path)
+
+		_G.directories_history[selected_path] = true
+		if history_utils.write_history then
+			history_utils.write_history(_G.directories_history)
+		end
+
+		print("Changed directory to: " .. selected_path)
+		local success, err = pcall(_G.select_directory_local_a_m)
+
+		if not success then
+			print("Error running fzf_dirs_local: " .. err)
+		else
+			print("Successfully Changed Directories: " .. selected_path)
+		end
+	else
+		print("Directory does not exist: " .. selected_path)
 	end
 
 	local current_dir = vim.fn.getcwd()
-	if path == current_dir then
-		return print("Already in the target directory: " .. path)
-	end
+	-- if selected_path == current_dir then
+	-- 	return print("Already in the target directory: " .. selected_path)
+	-- end
 
-	vim.cmd("cd " .. vim.fn.fnameescape(path))
-	print("Changed directory to: " .. path)
+	vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
+	print("Changed directory to: " .. selected_path)
 
 	local ok, err = pcall(_G.select_directory_local_a_m)
 	if not ok then
 		print("Error running fzf_mfe: " .. err)
 	else
-		print("Successfully changed directories: " .. path)
+		print("Successfully changed directories: " .. selected_path)
 	end
 end
 
 function M.open_dir_tmux(selected)
-	local selected_path = utils.selected_path(selected)
+	local selected_path
+	-- selected_path = utils.selected_path(selected) -- Pass the cleaned path to your function
+	local captured_path = selected[1]:match("%(([^)]+)%)")
+	if captured_path then
+		selected_path = utils.selected_path(selected)
+	else
+		selected_path = selected[1]:gsub(" ", "") -- Remove the " " prefix
+	end
 
 	local tmux_session_name
 
