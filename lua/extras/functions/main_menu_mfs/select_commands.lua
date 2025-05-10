@@ -92,7 +92,7 @@ _G.select_commands = function(opts)
     "npm run test:e2e",
     "npx shadcn@latest init",
     "npx shadcn@latest add button",
-    "echo your-api-key | gpg --symmetric --cipher-algo AES256 -o ~/.openai-api-key.gpg",
+    "npx create-next-app@latest",
   }
 
   -- Execute fzf with the predefined popular links
