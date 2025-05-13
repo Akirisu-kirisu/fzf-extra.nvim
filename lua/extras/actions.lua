@@ -11,7 +11,7 @@ function M.open_dir(selected)
 	end
 
 	if vim.fn.isdirectory(selected_path) == 1 then
-		vim.cmd("cd " .. selected_path)
+		vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
 
 		_G.directories_history[selected_path] = true
 		if history_utils.write_history then
@@ -30,20 +30,20 @@ function M.open_dir(selected)
 		print("Directory does not exist: " .. selected_path)
 	end
 
-	local current_dir = vim.fn.getcwd()
+	-- local current_dir = vim.fn.getcwd()
 	-- if selected_path == current_dir then
 	-- 	return print("Already in the target directory: " .. selected_path)
 	-- end
 
-	vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
-	print("Changed directory to: " .. selected_path)
-
-	local ok, err = pcall(_G.select_directory_local_a_m)
-	if not ok then
-		print("Error running fzf_mfe: " .. err)
-	else
-		print("Successfully changed directories: " .. selected_path)
-	end
+	-- vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
+	-- print("Changed directory to: " .. selected_path)
+	--
+	-- local ok, err = pcall(_G.select_directory_local_a_m)
+	-- if not ok then
+	-- 	print("Error running fzf_mfe: " .. err)
+	-- else
+	-- 	print("Successfully changed directories: " .. selected_path)
+	-- end
 end
 
 function M.open_dir_tmux(selected)

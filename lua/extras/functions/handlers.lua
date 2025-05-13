@@ -37,16 +37,11 @@ _G.select_directory_global_mfe = function(opts)
 			fn = function(selected)
 				extra_actions.open_dir(selected)
 			end,
-			exec_silent = true,
+			-- exec_silent = true,
 		},
 		-- Custom key binding for the 'Tab' key (using 'ctrl-v' + Tab for input mapping)
 		["tab"] = function(selected)
 			extra_actions.open_dir_tmux(selected)
-		end,
-
-		["alt-e"] = function(selected)
-			-- vim.cmd'normal! FzfLua files'
-			require'fzf-lua'.files()
 		end,
 	}
 
@@ -244,96 +239,130 @@ _G.select_local_directories = function(opts)
 end
 
 _G.select_hidden_directories = function(opts)
-  opts = opts or {}
-  opts.prompt = "Hidden Directories> "
-  opts.fn_transform = function(x)
-    return fzf_lua.utils.ansi_codes.magenta(x)
-  end
-  opts.actions = {
-    ["default"] = function(selected)
-      vim.cmd("cd " .. selected[1])
-    end,
+	opts = opts or {}
+	opts.prompt = "Hidden Directories> "
+	opts.fn_transform = function(x)
+		return fzf_lua.utils.ansi_codes.magenta(x)
+	end
+	opts.actions = {
+		["default"] = function(selected)
+			vim.cmd("cd " .. selected[1])
+		end,
 
-    ["tab"] = function(selected)
-      extra_actions.open_dir_tmux(selected)
-    end,
-  }
-  -- Modify the fd command to correctly search hidden directories and exclude .git
-  -- Also, ensure to include directories that are hidden (starting with a dot)
-  fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules --absolute-path --max-depth 1 .", opts)
+		["tab"] = function(selected)
+			extra_actions.open_dir_tmux(selected)
+		end,
+	}
+	-- Modify the fd command to correctly search hidden directories and exclude .git
+	-- Also, ensure to include directories that are hidden (starting with a dot)
+	fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules --absolute-path --max-depth 1 .", opts)
 end
 
-
 _G.select_history_directories = function(opts)
-  opts = opts or {}
-  opts.prompt = "History> "
+	opts = opts or {}
+	opts.prompt = "History> "
 
-  -- Load stored history
-  local stored = history_utils.read_history()
+	-- Load stored history
+	local stored = history_utils.read_history()
 
-  -- Merge with session's history
-  for dir, _ in pairs(_G.directories_history) do
-    stored[dir] = true
-  end
+	-- Merge with session's history
+	for dir, _ in pairs(_G.directories_history) do
+		stored[dir] = true
+	end
 
-  -- Save merged version
-  history_utils.write_history(stored)
+	-- Save merged version
+	history_utils.write_history(stored)
 
-  -- Convert to list with uniqueness
-  local seen = {}
-  local dir_list = {}
+	-- Convert to list with uniqueness
+	local seen = {}
+	local dir_list = {}
 
-  for dir, _ in pairs(stored) do
-    if not seen[dir] then
-      seen[dir] = true
-      table.insert(dir_list, dir)
-    end
-  end
+	for dir, _ in pairs(stored) do
+		if not seen[dir] then
+			seen[dir] = true
+			table.insert(dir_list, dir)
+		end
+	end
 
-  opts.actions = {
-    ["ctrl-d"] = {
-      fn = function(selected)
-        if type(selected) == "table" then
-          selected = selected[1]
-        end
+	opts.actions = {
+		["ctrl-d"] = {
+			fn = function(selected)
+				if type(selected) == "table" then
+					selected = selected[1]
+				end
 
-        -- Remove from current session history
-        _G.directories_history[selected] = nil
+				-- Remove from current session history
+				_G.directories_history[selected] = nil
 
-        -- Also remove from file history
-        local stored_history = history_utils.read_history()
-        stored_history[selected] = nil
-        history_utils.write_history(stored_history)
+				-- Also remove from file history
+				local stored_history = history_utils.read_history()
+				stored_history[selected] = nil
+				history_utils.write_history(stored_history)
 
-        print("Removed from history: " .. selected)
-      end,
-    },
-    ["default"] = {
-      fn = function(selected)
-        if type(selected) == "table" then
-          selected = selected[1]
-        end
-        vim.cmd("cd " .. selected)
-        print("Jumped to " .. selected)
-      end,
-    },
-    ["tab"] = function(selected)
-		extra_actions.open_dir_tmux(selected)
-      end,
-    ["ctrl-y"] = {
-      fn = function(selected)
-        if type(selected) == "table" then
-          selected = selected[1]
-        end
-        -- Copy to system clipboard
-        vim.fn.setreg("+", selected)
-        print("Copied to clipboard: " .. selected)
-      end,
-      exec_silent = true,
-    },
-  }
+				print("Removed from history: " .. selected)
+			end,
+		},
+		["default"] = {
+			fn = function(selected)
+				if type(selected) == "table" then
+					selected = selected[1]
+				end
+				vim.cmd("cd " .. selected)
+				print("Jumped to " .. selected)
+			end,
+		},
+		["tab"] = function(selected)
+			extra_actions.open_dir_tmux(selected)
+		end,
+		["ctrl-y"] = {
+			fn = function(selected)
+				if type(selected) == "table" then
+					selected = selected[1]
+				end
+				-- Copy to system clipboard
+				vim.fn.setreg("+", selected)
+				print("Copied to clipboard: " .. selected)
+			end,
+			exec_silent = true,
+		},
+	}
 
-  require("fzf-lua").fzf_exec(dir_list, opts)
+	require("fzf-lua").fzf_exec(dir_list, opts)
+end
+
+_G.select_open_files = function(opts)
+	opts = opts or {}
+	opts.prompt = "Files> "
+	-- opts.fn_transform = function(x)
+	--   return fzf_lua.utils.ansi_codes.magenta(x)
+	-- end
+	opts.actions = {
+		["default"] = function(selected)
+			vim.cmd("e " .. selected[1]) -- 'e' is the command to edit a file
+		end,
+
+		["alt-a"] = function(selected)
+			local file = selected[1]
+			local os_name = vim.loop.os_uname().sysname
+
+			-- Open the file based on OS
+			if os_name == "Darwin" then -- macOS
+				os.execute("open " .. file)
+			elseif os_name == "Linux" then -- Linux
+				os.execute("xdg-open " .. file)
+			elseif os_name == "Windows_NT" then -- Windows
+				os.execute("start " .. file)
+			else
+				print("Unsupported OS")
+			end
+		end,
+
+		["alt-m"] = function(selected)
+			_G.select_directory_local_a_m()
+		end,
+	}
+
+	fzf_lua.fzf_exec("fd --type f", opts) -- fd command for files
 end
 
 return M

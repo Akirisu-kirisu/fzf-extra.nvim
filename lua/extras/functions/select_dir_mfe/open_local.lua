@@ -32,6 +32,10 @@ _G.select_directory_local_a_m = function(opts)
 				_G.select_directory_global_mfe()
 			end,
 		},
+		["alt-e"] = function(selected)
+			-- require'fzf-lua'.files()
+			_G.select_open_files()
+		end,
 	}
 
 	local fzf_list = {}
@@ -59,4 +63,3 @@ _G.select_directory_local_a_m = function(opts)
 
 	fzf_lua.fzf_exec(formatted_list, opts)
 end
-
