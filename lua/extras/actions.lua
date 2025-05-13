@@ -62,7 +62,25 @@ function M.open_dir_tmux(selected)
 	if selected_path == "/" then
 		tmux_session_name = "root"
 	else
+
 		tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+		-- Emoji pool (ensure enough emojis to cover different paths)
+		-- local emoji_pool = {
+		-- 	"🚀", "🔥", "🌱", "💡", "🎯", "🧠", "🔧", "🪄", "🐍", "📦",
+		-- 	"🌐", "🐳", "🛠", "🧪", "🎉", "🐛", "🖥", "📁", "⚙️", "📚"
+		-- }
+		-- local path = vim.fn.fnamemodify(selected_path, ":p")
+		-- local last_name = utils.get_last_name(path)
+		--
+		-- -- Generate a hash from the full path
+		-- local hash = vim.fn.sha256(path)
+		--
+		-- -- Use the first few characters of the hash to index into the emoji pool
+		-- local emoji_index = tonumber("0x" .. hash:sub(1, 2)) % #emoji_pool + 1
+		-- local emoji = emoji_pool[emoji_index]
+
+		-- Construct tmux session name
+		-- tmux_session_name = last_name .. "-" .. emoji
 	end
 
 	if selected_path and vim.fn.isdirectory(selected_path) == 1 then
@@ -80,12 +98,12 @@ function M.open_dir_tmux(selected)
 			--     .. vim.inspect(tmux_session_name)
 			-- )
 			-- Check if the tmux session exists by using tmux has-session command
-			local tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name .. ">/dev/null 2>&1")
+			local tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name)
+			-- local tmux_session_exists = vim.fn.system("tmux has-session -t " .. 'acas')
 
-			-- print(
-			--   "DEBUGPRINT[1]: fzf.lua:376: tmux_session_exists="
-			--     .. tmux_session_exists
-			-- )
+			-- if tmux_session_name == ""  then
+			--
+			-- end
 			vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
 
 			-- Attach to the tmux session
