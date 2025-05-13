@@ -43,6 +43,11 @@ _G.select_directory_global_mfe = function(opts)
 		["tab"] = function(selected)
 			extra_actions.open_dir_tmux(selected)
 		end,
+
+		["alt-e"] = function(selected)
+			-- vim.cmd'normal! FzfLua files'
+			require'fzf-lua'.files()
+		end,
 	}
 
 	utils.get_current_dir(_G.directories)
