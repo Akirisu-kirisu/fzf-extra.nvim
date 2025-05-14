@@ -19,7 +19,8 @@ function M.open_dir(selected)
 		end
 
 		print("Changed directory to: " .. selected_path)
-		local success, err = pcall(_G.select_directory_local_a_m)
+		-- local success, err = pcall(_G.select_directory_local_a_m)
+		local success, err = pcall(_G.select_local_directories_max_1)
 
 		if not success then
 			print("Error running fzf_dirs_local: " .. err)

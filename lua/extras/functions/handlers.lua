@@ -222,6 +222,63 @@ _G.select_local_directories = function(opts)
 
 	local fzf_list = {}
 	local fd_command = "fd --type d --exclude node_modules"
+	-- local fd_command = "fd --type d --exclude node_modules --absolute-path --max-depth 1 ."
+
+	-- Execute the 'fd' command and capture the output
+	local output = vim.fn.systemlist(fd_command)
+
+	-- Iterate over the directories found by 'fd' and prepare them for fzf
+	for _, subdir in ipairs(output) do
+		if vim.fn.isdirectory(subdir) == 1 then
+			-- table.insert(fzf_list, subdir)
+			table.insert(fzf_list, "" .. " " .. subdir)
+		end
+	end
+
+	-- Proceed with launching fzf
+	fzf_lua.fzf_exec(fzf_list, opts)
+end
+
+_G.select_local_directories_max_1 = function(opts)
+	opts = opts or {}
+	opts.prompt = "Directories> "
+	opts.fn_transform = function(x)
+		return fzf_lua.utils.ansi_codes.green(x)
+	end
+
+	opts.actions = {
+		["default"] = function(selected)
+			local selected_path = selected[1]:gsub(" ", "") -- Remove the " " prefix
+			-- Check if the directory exists before attempting to change into it
+			if selected_path == nil or selected_path == "" then
+				print("Error: No valid path selected.")
+				return
+			end
+			if vim.fn.isdirectory(selected_path) == 1 then
+				vim.cmd("Oil " .. selected_path)
+				print("Changed directory to: " .. selected_path)
+			else
+				print("Directory does not exist: " .. selected_path)
+			end
+		end,
+		["tab"] = function(selected)
+			extra_actions.open_dir_tmux(selected)
+		end,
+		["alt-m"] = {
+			fn = function(selected)
+				_G.select_directory_global_mfe()
+			end,
+			exec_silent = true,
+		},
+		["alt-e"] = {
+			fn = function(selected)
+				_G.select_open_files()
+			end,
+		},
+	}
+
+	local fzf_list = {}
+	local fd_command = "fd --type d --exclude node_modules --max-depth 1 ."
 
 	-- Execute the 'fd' command and capture the output
 	local output = vim.fn.systemlist(fd_command)
@@ -358,7 +415,7 @@ _G.select_open_files = function(opts)
 		end,
 
 		["alt-m"] = function(selected)
-			_G.select_directory_local_a_m()
+			_G.select_local_directories_max_1()
 		end,
 	}
 

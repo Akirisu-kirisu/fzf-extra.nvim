@@ -38,7 +38,7 @@ local mappings = {
 		description = "Select main menu for devices MFD",
 	},
 	{ cmd = "Directories", func = "select_filePath", key = "mfc", description = "Select file path" },
-	{ cmd = "Directories", func = "select_local_directories", key = "mfw", description = "Select local directories" },
+	{ cmd = "Directories", func = "select_local_directories_max_1", key = "mfw", description = "Select local directories" },
 	{ cmd = "Directories", func = "select_local_directories", key = "<leader>fw", description = "Select local directories" },
 	{ cmd = "Directories", func = "select_hidden_directories", key = "mfh", description = "Select hidden directories" },
 	{
