@@ -422,4 +422,45 @@ _G.select_open_files = function(opts)
 	fzf_lua.fzf_exec("fd --type f", opts) -- fd command for files
 end
 
+_G.select_git_commits = function(opts)
+  opts = opts or {}
+
+  opts.prompt = "Commits> "
+  opts.fn_transform = function(x)
+    return fzf_lua.utils.ansi_codes.yellow(x)
+  end
+
+  opts.preview = "git show --color=always {1}"
+  opts.winopts = {
+    preview = {
+      layout = "vertical",  -- or "horizontal"
+      vertical = "right:70%", -- 70% of width on the right
+      wrap = true,
+    }
+  }
+
+  opts.silent = true  -- suppress deprecation warnings
+
+  opts.actions = {
+	  ['default'] = function(selected)
+		  local commit_hash = selected[1]:match("^%w+")
+		  if commit_hash then
+			  -- Open a new tab and display the full commit details using bat with proper syntax highlighting
+			  -- vim.cmd("tabnew")  -- Open a new tab
+			  -- Use git show to display the full commit with the diff and pipe it to bat for proper syntax highlighting
+			  vim.cmd("term git show " .. commit_hash .. " | bat --language=diff --pager=never --style=full")  -- Show full commit details including message and diff
+		  end
+	  end,
+    ['tab'] = function(selected)
+      local commit_hash = selected[1]:match("^%w+")
+      if commit_hash then
+        vim.cmd("DiffviewOpen " .. commit_hash)
+      end
+    end
+  }
+
+  local git_log_cmd = "git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
+  fzf_lua.fzf_exec(git_log_cmd, opts)
+end
+
 return M
