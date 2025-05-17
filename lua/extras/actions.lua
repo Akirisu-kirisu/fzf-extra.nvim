@@ -63,28 +63,7 @@ function M.open_dir_tmux(selected)
 	if selected_path == "/" then
 		tmux_session_name = "root"
 	else
-
-		local last_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
-		local tmux_sesson_identifier =  utils.get_second_last_name(selected_path)
-		-- print('DEBUGPRINT[268]: actions.lua:68: tmux_sesson_identifier=' .. vim.inspect(tmux_sesson_identifier))
-		-- Emoji pool (ensure enough emojis to cover different paths)
-		-- local emoji_pool = {
-		-- 	"🚀", "🔥", "🌱", "💡", "🎯", "🧠", "🔧", "🪄", "🐍", "📦",
-		-- 	"🌐", "🐳", "🛠", "🧪", "🎉", "🐛", "🖥", "📁", "⚙️", "📚"
-		-- }
-		-- local path = vim.fn.fnamemodify(selected_path, ":p")
-		-- local last_name = utils.get_last_name(path)
-		--
-		-- -- Generate a hash from the full path
-		-- local hash = vim.fn.sha256(path)
-		--
-		-- -- Use the first few characters of the hash to index into the emoji pool
-		-- local emoji_index = tonumber("0x" .. hash:sub(1, 2)) % #emoji_pool + 1
-		-- local emoji = emoji_pool[emoji_index]
-
-		-- Construct tmux session name
-		tmux_session_name =  tmux_sesson_identifier .. "/" .. last_name
-		-- tmux_session_name =  tmux_sesson_identifier
+		tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
 	end
 
 	if selected_path and vim.fn.isdirectory(selected_path) == 1 then
@@ -105,62 +84,89 @@ function M.open_dir_tmux(selected)
 			local tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name)
 			-- local tmux_session_exists = vim.fn.system("tmux has-session -t " .. 'acas')
 
-			-- if tmux_session_name == ""  then
+			if string.find(tmux_session_exists, "can't find session: " .. tmux_session_name) then
+				-- tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+				vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
+			else
+				-- Attach to the tmux session
+				vim.fn.system("tmux attach -t " .. tmux_session_name)
+				--
+				-- -- Switch to the tmux client (optional)
+				vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+
+				-- TODO:
+				-- Session exists, check if the path matches
+				-- local current_path = vim.fn.system("tmux display-message -p '#{pane_current_path}'")
+				-- current_path = current_path:gsub("\n", "") -- Remove any extra newlines from the output
+				-- Get the current path of the active pane in the specified tmux session
+				-- local panes_list = vim.fn.system("tmux list-panes -t " .. tmux_session_name)
+				--
+				-- local current_path = vim.fn.system("tmux display-message -p '#{pane_current_path}' -t " .. tmux_session_name .. ":0.0")
+				-- current_path = current_path:gsub("\n", "")  -- Remove newlines from the output
+				-- print("DEBUGPRINT[269]: actions.lua:98: current_path=" .. vim.inspect(current_path))
+
+				-- before creating a new one make sure it has different path
+				if selected_path then
+					-- body
+				end
+				-- local last_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+				-- local tmux_sesson_identifier = utils.get_second_last_name(selected_path)
+				-- tmux_session_name = tmux_sesson_identifier .. "/" .. last_name
+			end
+
+			-- vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
 			--
+			-- -- Attach to the tmux session
+			-- vim.fn.system("tmux attach -t " .. tmux_session_name)
+			--
+			-- -- Switch to the tmux client (optional)
+			-- vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+			-- if tmux_session_exists then
+			--   -- Check if tmux is running but user is detached
+			--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+			--   print("Switched to tmux session: " .. tmux_session_name)
+			-- ╭───────────────────────────────────────────────────────────────────╮
+			-- │ Check if the tmux session is detached                             │
+			-- ╰───────────────────────────────────────────────────────────────────╯
+			-- NOTE: This is not working - because it needs to
+			-- initiate a new tmux and then attach to it - which is not possible
+			-- if tmux is already running or not running
+			-- NOTE: Possible solution:
+			-- 1. Initiate a new tmux from the root terminal
+			-- 2. create a new buffer that runs the tmux and attach to it ane make the
+			-- terminal alacritty or something else initiate
+			-- the tmux
+
+			-- local tmux_is_detached = vim.fn.system(
+			--   "tmux list-sessions -F '#{session_name}:#{session_attached}' | grep -E '^"
+			--     .. tmux_session_name
+			--     .. ":[0]$' 2>/dev/null"
+			-- ) ~= ""
+			--
+			-- print(
+			--   "DEBUGPRINT[1]: fzf.lua:381: tmux_is_detached="
+			--     .. vim.inspect(tmux_is_detached)
+			-- )
+			--
+			-- elseif tmux_is_detached then --not working
+			--   -- print("check " .. vim.fn.system "~/.config/nvim/lua/plugins/configs/fuzzy_finder/scripts-fzf/tmux.sh")
+			--   -- vim.fn.system "./scripts-fzf/tmux.sh"
+			--   -- vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+			--   print("Attached to tmux session: " .. tmux_session_name)
+			-- else
+			--   -- # Session doesn't exist, create a new one
+			--   vim.fn.system(
+			--     "tmux new-session -ds "
+			--       .. tmux_session_name
+			--       .. " -c "
+			--       .. tmux_session_name
+			--   )
+			--   -- Optionally, attach to the session (this is usually the expected behavior)
+			--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+			--   print(
+			--     "Created and switched to new tmux session: " .. tmux_session_name
+			--   )
 			-- end
-			vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
-
-			-- Attach to the tmux session
-			vim.fn.system("tmux attach -t " .. tmux_session_name)
-
-			-- Switch to the tmux client (optional)
-			vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-		-- if tmux_session_exists then
-		--   -- Check if tmux is running but user is detached
-		--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-		--   print("Switched to tmux session: " .. tmux_session_name)
-		-- ╭───────────────────────────────────────────────────────────────────╮
-		-- │ Check if the tmux session is detached                             │
-		-- ╰───────────────────────────────────────────────────────────────────╯
-		-- NOTE: This is not working - because it needs to
-		-- initiate a new tmux and then attach to it - which is not possible
-		-- if tmux is already running or not running
-		-- NOTE: Possible solution:
-		-- 1. Initiate a new tmux from the root terminal
-		-- 2. create a new buffer that runs the tmux and attach to it ane make the
-		-- terminal alacritty or something else initiate
-		-- the tmux
-
-		-- local tmux_is_detached = vim.fn.system(
-		--   "tmux list-sessions -F '#{session_name}:#{session_attached}' | grep -E '^"
-		--     .. tmux_session_name
-		--     .. ":[0]$' 2>/dev/null"
-		-- ) ~= ""
-		--
-		-- print(
-		--   "DEBUGPRINT[1]: fzf.lua:381: tmux_is_detached="
-		--     .. vim.inspect(tmux_is_detached)
-		-- )
-		--
-		-- elseif tmux_is_detached then --not working
-		--   -- print("check " .. vim.fn.system "~/.config/nvim/lua/plugins/configs/fuzzy_finder/scripts-fzf/tmux.sh")
-		--   -- vim.fn.system "./scripts-fzf/tmux.sh"
-		--   -- vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-		--   print("Attached to tmux session: " .. tmux_session_name)
-		-- else
-		--   -- # Session doesn't exist, create a new one
-		--   vim.fn.system(
-		--     "tmux new-session -ds "
-		--       .. tmux_session_name
-		--       .. " -c "
-		--       .. tmux_session_name
-		--   )
-		--   -- Optionally, attach to the session (this is usually the expected behavior)
-		--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-		--   print(
-		--     "Created and switched to new tmux session: " .. tmux_session_name
-		--   )
-		-- end
 		else
 			-- If tmux is not available, just change directory in Vim
 			vim.cmd("cd " .. selected_path)
