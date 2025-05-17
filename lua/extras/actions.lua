@@ -64,7 +64,9 @@ function M.open_dir_tmux(selected)
 		tmux_session_name = "root"
 	else
 
-		tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+		local last_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+		local tmux_sesson_identifier =  utils.get_second_last_name(selected_path)
+		-- print('DEBUGPRINT[268]: actions.lua:68: tmux_sesson_identifier=' .. vim.inspect(tmux_sesson_identifier))
 		-- Emoji pool (ensure enough emojis to cover different paths)
 		-- local emoji_pool = {
 		-- 	"🚀", "🔥", "🌱", "💡", "🎯", "🧠", "🔧", "🪄", "🐍", "📦",
@@ -81,7 +83,8 @@ function M.open_dir_tmux(selected)
 		-- local emoji = emoji_pool[emoji_index]
 
 		-- Construct tmux session name
-		-- tmux_session_name = last_name .. "-" .. emoji
+		tmux_session_name =  tmux_sesson_identifier .. "/" .. last_name
+		-- tmux_session_name =  tmux_sesson_identifier
 	end
 
 	if selected_path and vim.fn.isdirectory(selected_path) == 1 then

@@ -26,6 +26,34 @@ function M.get_last_name(path)
 	end
 end
 
+function M.get_second_last_name(path)
+	-- Ensure the path is not empty or nil
+	if not path or #path == 0 then
+		return nil
+	end
+
+	-- Remove trailing slashes
+	path = path:gsub("/+$", "")
+
+	-- Extract all parts of the path into a table
+	local parts = {}
+	for part in path:gmatch("[^/]+") do
+		table.insert(parts, part)
+	end
+
+	-- Debug: Print the extracted parts of the path
+	print("Parts:", table.concat(parts, ", "))
+
+	-- Return the second-to-last part if it exists
+	if #parts >= 2 then
+		-- Debug: Print the second-to-last part
+		print("Second to last part:", parts[#parts - 1])
+		return parts[#parts - 1]:gsub("%.", "_")
+	else
+		return nil
+	end
+end
+
 function M.selected_path(selected)
 	local selected_path = selected[1]:match("%(([^)]+)%)") -- Capture the path inside parentheses
 	print("Selected_path: " .. vim.inspect(selected_path))
