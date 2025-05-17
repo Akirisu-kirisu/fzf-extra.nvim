@@ -63,7 +63,10 @@ function M.open_dir_tmux(selected)
 	if selected_path == "/" then
 		tmux_session_name = "root"
 	else
-		tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+		local last_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+		local tmux_sesson_identifier = utils.get_second_last_name(selected_path)
+		tmux_session_name = tmux_sesson_identifier .. "/" .. last_name
+		-- tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
 	end
 
 	if selected_path and vim.fn.isdirectory(selected_path) == 1 then
@@ -81,46 +84,45 @@ function M.open_dir_tmux(selected)
 			--     .. vim.inspect(tmux_session_name)
 			-- )
 			-- Check if the tmux session exists by using tmux has-session command
-			local tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name)
-			-- local tmux_session_exists = vim.fn.system("tmux has-session -t " .. 'acas')
+			-- local tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name)
 
-			if string.find(tmux_session_exists, "can't find session: " .. tmux_session_name) then
-				-- tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
-				vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
-			else
-				-- Attach to the tmux session
-				vim.fn.system("tmux attach -t " .. tmux_session_name)
-				--
-				-- -- Switch to the tmux client (optional)
-				vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-
-				-- TODO:
-				-- Session exists, check if the path matches
-				-- local current_path = vim.fn.system("tmux display-message -p '#{pane_current_path}'")
-				-- current_path = current_path:gsub("\n", "") -- Remove any extra newlines from the output
-				-- Get the current path of the active pane in the specified tmux session
-				-- local panes_list = vim.fn.system("tmux list-panes -t " .. tmux_session_name)
-				--
-				-- local current_path = vim.fn.system("tmux display-message -p '#{pane_current_path}' -t " .. tmux_session_name .. ":0.0")
-				-- current_path = current_path:gsub("\n", "")  -- Remove newlines from the output
-				-- print("DEBUGPRINT[269]: actions.lua:98: current_path=" .. vim.inspect(current_path))
-
-				-- before creating a new one make sure it has different path
-				if selected_path then
-					-- body
-				end
-				-- local last_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
-				-- local tmux_sesson_identifier = utils.get_second_last_name(selected_path)
-				-- tmux_session_name = tmux_sesson_identifier .. "/" .. last_name
-			end
-
+			-- if string.find(tmux_session_exists, "can't find session: " .. tmux_session_name) then
+			-- tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
 			-- vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
-			--
-			-- -- Attach to the tmux session
+			-- else
+			-- Attach to the tmux session
 			-- vim.fn.system("tmux attach -t " .. tmux_session_name)
 			--
 			-- -- Switch to the tmux client (optional)
 			-- vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+
+			-- TODO:
+			-- Session exists, check if the path matches
+			-- local current_path = vim.fn.system("tmux display-message -p '#{pane_current_path}'")
+			-- current_path = current_path:gsub("\n", "") -- Remove any extra newlines from the output
+			-- Get the current path of the active pane in the specified tmux session
+			-- local panes_list = vim.fn.system("tmux list-panes -t " .. tmux_session_name)
+			--
+			-- local current_path = vim.fn.system("tmux display-message -p '#{pane_current_path}' -t " .. tmux_session_name .. ":0.0")
+			-- current_path = current_path:gsub("\n", "")  -- Remove newlines from the output
+			-- print("DEBUGPRINT[269]: actions.lua:98: current_path=" .. vim.inspect(current_path))
+
+			-- before creating a new one make sure it has different path
+			-- if selected_path then
+			-- 	-- body
+			-- end
+			-- local last_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+			-- local tmux_sesson_identifier = utils.get_second_last_name(selected_path)
+			-- tmux_session_name = tmux_sesson_identifier .. "/" .. last_name
+			-- end
+
+			vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
+
+			-- Attach to the tmux session
+			vim.fn.system("tmux attach -t " .. tmux_session_name)
+
+			-- Switch to the tmux client (optional)
+			vim.fn.system("tmux switch-client -t " .. tmux_session_name)
 			-- if tmux_session_exists then
 			--   -- Check if tmux is running but user is detached
 			--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
