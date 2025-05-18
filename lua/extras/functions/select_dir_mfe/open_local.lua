@@ -32,6 +32,12 @@ _G.select_directory_local_a_m = function(opts)
 				_G.select_directory_global_mfe()
 			end,
 		},
+		["alt-d"] = {
+			fn = function(selected)
+				_G.select_local_directories_max_1()
+			end,
+			exec_silent = true,
+		},
 		["alt-e"] = function(selected)
 			-- require'fzf-lua'.files()
 			_G.select_open_files()

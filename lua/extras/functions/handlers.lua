@@ -270,6 +270,12 @@ _G.select_local_directories_max_1 = function(opts)
 			end,
 			exec_silent = true,
 		},
+		["alt-d"] = {
+			fn = function(selected)
+				_G.select_directory_local_a_m()
+			end,
+			exec_silent = true,
+		},
 		["alt-e"] = {
 			fn = function(selected)
 				_G.select_open_files()
