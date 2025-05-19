@@ -187,119 +187,7 @@ _G.select_filePath = function(opts)
 	fzf_lua.fzf_exec(options, opts)
 end
 
-_G.select_local_directories = function(opts)
-	opts = opts or {}
-	opts.prompt = "Directories> "
-	opts.fn_transform = function(x)
-		return fzf_lua.utils.ansi_codes.green(x)
-	end
 
-	opts.actions = {
-		["default"] = function(selected)
-			local selected_path = selected[1]:gsub(" ", "") -- Remove the " " prefix
-			-- Check if the directory exists before attempting to change into it
-			if selected_path == nil or selected_path == "" then
-				print("Error: No valid path selected.")
-				return
-			end
-			if vim.fn.isdirectory(selected_path) == 1 then
-				vim.cmd("Oil " .. selected_path)
-				print("Changed directory to: " .. selected_path)
-			else
-				print("Directory does not exist: " .. selected_path)
-			end
-		end,
-		["tab"] = function(selected)
-			extra_actions.open_dir_tmux(selected)
-		end,
-		["alt-m"] = {
-			fn = function(selected)
-				_G.select_directory_global_mfe()
-			end,
-			exec_silent = true,
-		},
-	}
-
-	local fzf_list = {}
-	local fd_command = "fd --type d --exclude node_modules"
-	-- local fd_command = "fd --type d --exclude node_modules --absolute-path --max-depth 1 ."
-
-	-- Execute the 'fd' command and capture the output
-	local output = vim.fn.systemlist(fd_command)
-
-	-- Iterate over the directories found by 'fd' and prepare them for fzf
-	for _, subdir in ipairs(output) do
-		if vim.fn.isdirectory(subdir) == 1 then
-			-- table.insert(fzf_list, subdir)
-			table.insert(fzf_list, "" .. " " .. subdir)
-		end
-	end
-
-	-- Proceed with launching fzf
-	fzf_lua.fzf_exec(fzf_list, opts)
-end
-
-_G.select_local_directories_max_1 = function(opts)
-	opts = opts or {}
-	opts.prompt = "Directories> "
-	opts.fn_transform = function(x)
-		return fzf_lua.utils.ansi_codes.green(x)
-	end
-
-	opts.actions = {
-		["default"] = function(selected)
-			local selected_path = selected[1]:gsub(" ", "") -- Remove the " " prefix
-			-- Check if the directory exists before attempting to change into it
-			if selected_path == nil or selected_path == "" then
-				print("Error: No valid path selected.")
-				return
-			end
-			if vim.fn.isdirectory(selected_path) == 1 then
-				vim.cmd("Oil " .. selected_path)
-				print("Changed directory to: " .. selected_path)
-			else
-				print("Directory does not exist: " .. selected_path)
-			end
-		end,
-		["tab"] = function(selected)
-			extra_actions.open_dir_tmux(selected)
-		end,
-		["alt-m"] = {
-			fn = function(selected)
-				_G.select_directory_global_mfe()
-			end,
-			exec_silent = true,
-		},
-		["alt-d"] = {
-			fn = function(selected)
-				_G.select_directory_local_a_m()
-			end,
-			exec_silent = true,
-		},
-		["alt-e"] = {
-			fn = function(selected)
-				_G.select_open_files()
-			end,
-		},
-	}
-
-	local fzf_list = {}
-	local fd_command = "fd --type d --exclude node_modules --max-depth 1 ."
-
-	-- Execute the 'fd' command and capture the output
-	local output = vim.fn.systemlist(fd_command)
-
-	-- Iterate over the directories found by 'fd' and prepare them for fzf
-	for _, subdir in ipairs(output) do
-		if vim.fn.isdirectory(subdir) == 1 then
-			-- table.insert(fzf_list, subdir)
-			table.insert(fzf_list, "" .. " " .. subdir)
-		end
-	end
-
-	-- Proceed with launching fzf
-	fzf_lua.fzf_exec(fzf_list, opts)
-end
 
 _G.select_hidden_directories = function(opts)
 	opts = opts or {}
@@ -353,7 +241,6 @@ _G.select_history_directories = function(opts)
 				if type(selected) == "table" then
 					selected = selected[1]
 				end
-
 				-- Remove from current session history
 				_G.directories_history[selected] = nil
 
@@ -371,6 +258,7 @@ _G.select_history_directories = function(opts)
 					selected = selected[1]
 				end
 				vim.cmd("cd " .. selected)
+				vim.cmd('Oil ' .. selected)
 				print("Jumped to " .. selected)
 			end,
 		},
@@ -429,44 +317,45 @@ _G.select_open_files = function(opts)
 end
 
 _G.select_git_commits = function(opts)
-  opts = opts or {}
+	opts = opts or {}
 
-  opts.prompt = "Commits> "
-  opts.fn_transform = function(x)
-    return fzf_lua.utils.ansi_codes.yellow(x)
-  end
+	opts.prompt = "Commits> "
+	opts.fn_transform = function(x)
+		return fzf_lua.utils.ansi_codes.yellow(x)
+	end
 
-  opts.preview = "git show --color=always {1}"
-  opts.winopts = {
-    preview = {
-      layout = "vertical",  -- or "horizontal"
-      vertical = "right:70%", -- 70% of width on the right
-      wrap = true,
-    }
-  }
+	opts.preview = "git show --color=always {1}"
+	opts.winopts = {
+		preview = {
+			layout = "vertical", -- or "horizontal"
+			vertical = "right:70%", -- 70% of width on the right
+			wrap = true,
+		},
+	}
 
-  opts.silent = true  -- suppress deprecation warnings
+	opts.silent = true -- suppress deprecation warnings
 
-  opts.actions = {
-	  ['default'] = function(selected)
-		  local commit_hash = selected[1]:match("^%w+")
-		  if commit_hash then
-			  -- Open a new tab and display the full commit details using bat with proper syntax highlighting
-			  -- vim.cmd("tabnew")  -- Open a new tab
-			  -- Use git show to display the full commit with the diff and pipe it to bat for proper syntax highlighting
-			  vim.cmd("term git show " .. commit_hash .. " | bat --language=diff --pager=never --style=full")  -- Show full commit details including message and diff
-		  end
-	  end,
-    ['tab'] = function(selected)
-      local commit_hash = selected[1]:match("^%w+")
-      if commit_hash then
-        vim.cmd("DiffviewOpen " .. commit_hash)
-      end
-    end
-  }
+	opts.actions = {
+		["default"] = function(selected)
+			local commit_hash = selected[1]:match("^%w+")
+			if commit_hash then
+				-- Open a new tab and display the full commit details using bat with proper syntax highlighting
+				-- vim.cmd("tabnew")  -- Open a new tab
+				-- Use git show to display the full commit with the diff and pipe it to bat for proper syntax highlighting
+				vim.cmd("term git show " .. commit_hash .. " | bat --language=diff --pager=never --style=full") -- Show full commit details including message and diff
+			end
+		end,
+		["tab"] = function(selected)
+			local commit_hash = selected[1]:match("^%w+")
+			if commit_hash then
+				vim.cmd("DiffviewOpen " .. commit_hash)
+			end
+		end,
+	}
 
-  local git_log_cmd = "git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
-  fzf_lua.fzf_exec(git_log_cmd, opts)
+	local git_log_cmd =
+		"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
+	fzf_lua.fzf_exec(git_log_cmd, opts)
 end
 
 return M

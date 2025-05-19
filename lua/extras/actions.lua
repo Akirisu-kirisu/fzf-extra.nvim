@@ -207,4 +207,15 @@ function M.captures_parentheses_copy(selected)
 	return output
 end
 
+function M.open_oil(selected)
+	local selected_path = utils.selected_path(selected)
+
+	if vim.fn.isdirectory(selected_path) == 1 then
+		vim.cmd("Oil " .. selected_path)
+		print("Changed directory to: " .. selected_path)
+	else
+		print("Directory does not exist: " .. selected_path)
+	end
+end
+
 return M

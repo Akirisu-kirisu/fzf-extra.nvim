@@ -5,6 +5,18 @@ _G.directories_devices = {}
 _G.directories_all = _G.directories_all or {}
 _G.directories_history = _G.directories_history or {}
 
+local function path_exists(path)
+  return vim.fn.isdirectory(path) == 1
+end
+
+local function add_existing_dirs(dirs)
+  for _, dir in ipairs(dirs) do
+    if path_exists(dir.path) then
+      table.insert(_G.directories, dir)
+    end
+  end
+end
+
 local windows_dirs = {
   { path = utils.home .. "\\vaults", alias = "Obsidian" },
   { path = utils.home .. "\\Documents", alias = "Documents" },
@@ -44,8 +56,10 @@ local unix_dirs = {
   { path = utils.home .. "/", alias = "Home" },
 }
 
+_G.directories = _G.directories or {}
+
 if utils.is_windows() then
-  _G.directories = vim.list_extend(_G.directories, windows_dirs)
+  add_existing_dirs(windows_dirs)
 else
-  _G.directories = vim.list_extend(_G.directories, unix_dirs)
+  add_existing_dirs(unix_dirs)
 end

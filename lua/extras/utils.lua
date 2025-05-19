@@ -11,12 +11,13 @@ function M.get_last_name(path)
 	if not path or #path == 0 then
 		return nil
 	end
+
 	-- Remove trailing slashes using Lua's string.gsub (will replace multiple slashes if needed)
-	path = path:gsub("/+$", "")
+	path = path:gsub("[\\/]+$", "")
 	-- Use Lua pattern matching to extract the last part of the path after the last '/'
 
 	-- Use Lua pattern matching to extract the last part of the path after the last '/'
-	local name = path:match("([^/]+)$")
+	local name = path:match("([^\\/]+)$")
 
 	-- Replace all dots in the name with underscores
 	if name then
@@ -55,8 +56,18 @@ function M.get_second_last_name(path)
 end
 
 function M.selected_path(selected)
-	local selected_path = selected[1]:match("%(([^)]+)%)") -- Capture the path inside parentheses
-	print("Selected_path: " .. vim.inspect(selected_path))
+	local selected_path = selected[1]
+
+	if selected_path:match("%(([^)]+)%)") then
+		-- If path is inside parentheses, extract it
+		selected_path = selected_path:match("%(([^)]+)%)")
+	elseif selected_path:find(" ") then
+		-- If string starts with " ", remove it
+		selected_path = selected_path:gsub(" ", "")
+	end
+
+	-- local selected_path = selected[1]:match("%(([^)]+)%)") -- Capture the path inside parentheses
+	-- print("Selected_path: " .. vim.inspect(selected_path))
 
 	-- If no path is found inside parentheses, just use the selected string itself
 	if not selected_path then
