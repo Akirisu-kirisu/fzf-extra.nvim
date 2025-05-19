@@ -19,7 +19,7 @@ _G.select_local_directories = function(opts)
 		},
 		["default"] = {
 			fn = function(selected)
-				extra_actions.open_dir(selected)
+				extra_actions.open_oil(selected)
 			end,
 			exec_silent = true,
 		},
@@ -85,7 +85,7 @@ _G.select_local_directories_max_1 = function(opts)
 			exec_silent = true,
 		},
 		["alt-o"] = function(selected)
-			vim.cmd('Oil')
+			extra_actions.open_oil(selected)
 		end,
 		["tab"] = function(selected)
 			extra_actions.open_dir_tmux(selected)
