@@ -22,6 +22,9 @@ _G.select_local_directories = function(opts)
 				extra_actions.open_oil(selected)
 			end,
 		},
+		["alt-s"] = function(selected)
+			vim.cmd('Oil ')
+		end,
 		-- Custom key binding for the 'Tab' key (using 'ctrl-v' + Tab for input mapping)
 		["tab"] = function(selected, opts)
 			extra_actions.open_dir_tmux(selected)
@@ -83,8 +86,8 @@ _G.select_local_directories_max_1 = function(opts)
 			end,
 			exec_silent = true,
 		},
-		["alt-o"] = function(selected)
-			extra_actions.open_oil(selected)
+		["alt-s"] = function(selected)
+			vim.cmd("Oil ")
 		end,
 		["tab"] = function(selected)
 			extra_actions.open_dir_tmux(selected)
