@@ -211,6 +211,10 @@ function M.open_oil(selected)
 	local selected_path = utils.selected_path(selected)
 
 	if vim.fn.isdirectory(selected_path) == 1 then
+		_G.directories_history[selected_path] = true
+		if history_utils.write_history then
+			history_utils.write_history(_G.directories_history)
+		end
 		vim.cmd("Oil " .. selected_path)
 		print("Changed directory to: " .. selected_path)
 	else

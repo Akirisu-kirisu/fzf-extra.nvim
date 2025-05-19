@@ -21,7 +21,6 @@ _G.select_local_directories = function(opts)
 			fn = function(selected)
 				extra_actions.open_oil(selected)
 			end,
-			exec_silent = true,
 		},
 		-- Custom key binding for the 'Tab' key (using 'ctrl-v' + Tab for input mapping)
 		["tab"] = function(selected, opts)
