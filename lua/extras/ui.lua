@@ -23,7 +23,7 @@ M.max_alias_len, M.max_path_len = 0, 0
   -- local function format_directory_output(dir, timestamp, name_width, path_width, timestamp_width)
 function M.format_directory_output(dir, name_width, parameter)
     local name = "  " .. dir.alias
-    local path = "(" .. dir.path .. ")"
+    local path = "⟨" .. dir.path .. "⟩"
     local formatted_name = string.format("%-" .. name_width .. "s", name)
     local formatted_path = string.format("%s │ %s", "", path)
 

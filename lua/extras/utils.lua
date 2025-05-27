@@ -75,33 +75,55 @@ end
 -- 	end
 -- 	return selected_path
 -- end
+
 function M.selected_path(selected)
 	local selected_path = selected[1]
 
-	-- Match the outermost parentheses
-	if selected_path:match("^%b()$") then
-		-- If the entire string is wrapped in parentheses
-		selected_path = selected_path:sub(2, -2)
-	else
-		-- Try to find the longest match that starts with '(' and ends with ')'
-		local start_pos, end_pos = selected_path:find("%b()")
-		if start_pos and end_pos then
-			selected_path = selected_path:sub(start_pos + 1, end_pos - 1)
-		end
-	end
-
-	-- If string starts with " ", remove it
-	if selected_path:find(" ") then
+	if selected_path:match("⟨(.-)⟩") then
+		-- If path is inside parentheses, extract it
+		selected_path = selected_path:match("⟨(.-)⟩")
+	elseif selected_path:find(" ") then
+		-- If string starts with " ", remove it
 		selected_path = selected_path:gsub(" ", "")
 	end
 
-	-- Fallback: use original string
-	if not selected_path or selected_path == "" then
+	-- local selected_path = selected[1]:match("%(([^)]+)%)") -- Capture the path inside parentheses
+	-- print("Selected_path: " .. vim.inspect(selected_path))
+
+	-- If no path is found inside parentheses, just use the selected string itself
+	if not selected_path then
 		selected_path = selected[1]
 	end
-
 	return selected_path
 end
+
+-- function M.selected_path(selected)
+-- 	local selected_path = selected[1]
+--
+-- 	-- Match the outermost parentheses
+-- 	if selected_path:match("^%b()$") then
+-- 		-- If the entire string is wrapped in parentheses
+-- 		selected_path = selected_path:sub(2, -2)
+-- 	else
+-- 		-- Try to find the longest match that starts with '(' and ends with ')'
+-- 		local start_pos, end_pos = selected_path:find("%b()")
+-- 		if start_pos and end_pos then
+-- 			selected_path = selected_path:sub(start_pos + 1, end_pos - 1)
+-- 		end
+-- 	end
+--
+-- 	-- If string starts with " ", remove it
+-- 	if selected_path:find(" ") then
+-- 		selected_path = selected_path:gsub(" ", "")
+-- 	end
+--
+-- 	-- Fallback: use original string
+-- 	if not selected_path or selected_path == "" then
+-- 		selected_path = selected[1]
+-- 	end
+--
+-- 	return selected_path
+-- end
 
 function M.is_windows()
 	return package.config:sub(1, 1) == "\\"
