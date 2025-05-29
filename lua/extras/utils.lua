@@ -161,22 +161,20 @@ function M.subdirs(directories)
 end
 
 function M.get_current_dir(list)
-	-- Include the current working directory as a "marked" directory (temporary)
 	local current_dir = vim.fn.getcwd()
+	local current_dir_name = vim.fn.fnamemodify(current_dir, ":t")
 
-	-- Dynamically set the alias for the current directory to its name
-	local current_dir_name = vim.fn.fnamemodify(current_dir, ":t") -- This gets the last part of the directory path (i.e., the name of the directory)
-
-	-- Check if the path already exists in the list
-	for _, entry in ipairs(list) do
+	-- Remove current_dir if it already exists in the list
+	for i, entry in ipairs(list) do
 		if entry.path == current_dir then
-			-- If the path exists, return the list without modification
-			return list
+			table.remove(list, i)
+			break
 		end
 	end
 
-	-- Insert the current directory entry with the dynamically set alias
-	table.insert(list, { path = current_dir, alias = current_dir_name })
+	-- Insert current_dir at the start of the list
+	table.insert(list, 1, { path = current_dir, alias = current_dir_name })
+
 	return list
 end
 
