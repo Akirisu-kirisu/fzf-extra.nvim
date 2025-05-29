@@ -1,6 +1,8 @@
 local fzf_lua = require("fzf-lua")
+local utils = require("extras.utils")
 
 _G.select_commands = function(opts)
+  utils.last_selected(select_commands)
   opts = opts or {}
   opts.prompt = "Scripts> "
 

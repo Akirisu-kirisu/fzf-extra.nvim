@@ -5,6 +5,7 @@ local ui = require("extras.ui")
 local extra_actions = require("extras.actions")
 
 _G.select_search_current_dir_packages = function(opts)
+  utils.last_selected(select_search_current_dir_packages)
   opts = opts or {}
   opts.prompt = "Scripts> " -- typo fixed: promt -> prompt
 

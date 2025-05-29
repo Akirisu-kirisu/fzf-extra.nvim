@@ -5,6 +5,7 @@ local ui = require("extras.ui")
 local extra_actions = require("extras.actions")
 
 _G.select_links = function(opts)
+	utils.last_selected(select_links)
   opts = opts or {}
   opts.prompt = "Links> "
 

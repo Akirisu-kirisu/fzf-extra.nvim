@@ -18,8 +18,11 @@ require("extras.functions.main_menu_devices_mfd.select_hardDisk_devices")
 
 require("extras.directories")
 
+
 local M = {}
+
 _G.select_directory_global_mfe = function(opts)
+	utils.last_selected(select_directory_global_mfe)
 	opts = opts or {}
 	opts.prompt = "Global Directories> "
 	opts.fn_transform = function(x)
@@ -75,6 +78,8 @@ _G.select_directory_global_mfe = function(opts)
 end
 
 _G.select_main_menu_mfs = function()
+	utils.last_selected(select_main_menu_mfs)
+
 	local opts = {
 		prompt = "Select Option> ",
 		fzf_opts = {
@@ -112,6 +117,7 @@ _G.select_main_menu_mfs = function()
 end
 
 _G.main_menu_devices_mfd = function()
+	utils.last_selected(main_menu_devices_mfd)
 	local opts = {
 		prompt = "Select Option> ",
 		fzf_opts = {
@@ -139,6 +145,7 @@ _G.main_menu_devices_mfd = function()
 end
 
 _G.select_filePath = function(opts)
+	utils.last_selected(select_filePath)
 	opts = opts or {}
 	opts.prompt = "Current Dir or File> "
 
@@ -187,9 +194,8 @@ _G.select_filePath = function(opts)
 	fzf_lua.fzf_exec(options, opts)
 end
 
-
-
 _G.select_hidden_directories = function(opts)
+	utils.last_selected(select_hidden_directories)
 	opts = opts or {}
 	opts.prompt = "Hidden Directories> "
 	opts.fn_transform = function(x)
@@ -210,6 +216,7 @@ _G.select_hidden_directories = function(opts)
 end
 
 _G.select_history_directories = function(opts)
+	utils.last_selected(select_history_directories)
 	opts = opts or {}
 	opts.prompt = "History> "
 
@@ -258,7 +265,7 @@ _G.select_history_directories = function(opts)
 					selected = selected[1]
 				end
 				vim.cmd("cd " .. selected)
-				vim.cmd('Oil ' .. selected)
+				vim.cmd("Oil " .. selected)
 				print("Jumped to " .. selected)
 			end,
 		},
@@ -282,6 +289,7 @@ _G.select_history_directories = function(opts)
 end
 
 _G.select_open_files = function(opts)
+	utils.last_selected(select_open_files)
 	opts = opts or {}
 	opts.prompt = "Files> "
 	-- opts.fn_transform = function(x)
@@ -317,6 +325,7 @@ _G.select_open_files = function(opts)
 end
 
 _G.select_git_commits = function(opts)
+	utils.last_selected(select_git_commits)
 	opts = opts or {}
 
 	opts.prompt = "Commits> "

@@ -50,6 +50,14 @@ local mappings = {
 	},
 }
 
+vim.keymap.set('n', 'mfl', function()
+	if type(_G.last_selected_fn) == "function" then
+		_G.last_selected_fn()
+	else
+		vim.notify("No function selected!", vim.log.levels.WARN)
+	end
+end, { desc = "Run last selected directory picker" })
+
 for _, mapping in ipairs(mappings) do
 	-- Check if the function is globally available
 	local func = _G[mapping.func]

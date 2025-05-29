@@ -5,7 +5,6 @@ local M = {}
 
 function M.open_dir(selected)
 	local selected_path = utils.selected_path(selected)
-
 	if not selected_path then
 		return print("Could not determine the directory from the selected string.")
 	end
@@ -37,14 +36,7 @@ function M.open_dir(selected)
 	end
 end
 function M.open_dir_tmux(selected)
-	local selected_path
-	-- selected_path = utils.selected_path(selected) -- Pass the cleaned path to your function
-	local captured_path = selected[1]:match("%(([^)]+)%)")
-	if captured_path then
-		selected_path = utils.selected_path(selected)
-	else
-		selected_path = selected[1]:gsub(" ", "") -- Remove the " " prefix
-	end
+	local selected_path = utils.selected_path(selected)
 
 	local tmux_session_name
 

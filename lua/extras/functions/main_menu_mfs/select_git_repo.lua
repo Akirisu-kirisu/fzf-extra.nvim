@@ -1,6 +1,8 @@
 local fzf_lua = require("fzf-lua")
+local utils = require("extras.utils")
 
 _G.select_git_repo = function(opts)
+	utils.last_selected(select_git_repo)
 	opts = opts or {}
 	opts.prompt = "Git Repos> "
 	opts.fn_transform = function(repo)

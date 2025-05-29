@@ -4,6 +4,7 @@ local utils = require("extras.utils")
 local extra_actions = require("extras.actions")
 
 _G.select_local_directories = function(opts)
+	utils.last_selected(select_local_directories)
 	opts = opts or {}
 	opts.prompt = "Global Directories> "
 	opts.fn_transform = function(x)
@@ -73,6 +74,7 @@ _G.select_local_directories = function(opts)
 end
 
 _G.select_local_directories_max_1 = function(opts)
+	utils.last_selected(select_local_directories_max_1)
 	opts = opts or {}
 	opts.prompt = "Directories> "
 	opts.fn_transform = function(x)

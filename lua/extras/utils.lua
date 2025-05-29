@@ -180,4 +180,18 @@ function M.get_current_dir(list)
 	return list
 end
 
+function M.last_selected(name)
+	local fn_name = name
+	print("DEBUGPRINT[271]: handlers.lua:22: fn_name=" .. vim.inspect(fn_name))
+
+	-- Mark previous fn as false
+	if _G.last_selected_fn and _G.last_selected_fn ~= fn_name then
+		_G.last_selected_fn_status[_G.last_selected_fn] = false
+	end
+
+	-- Mark current fn as true
+	_G.last_selected_fn_status[fn_name] = true
+	_G.last_selected_fn = fn_name
+end
+
 return M

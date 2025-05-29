@@ -5,6 +5,9 @@ _G.directories_devices = {}
 _G.directories_all = _G.directories_all or {}
 _G.directories_history = _G.directories_history or {}
 
+_G.last_selected_fn_status = _G.last_selected_fn_status or {}
+_G.last_selected_fn = _G.last_selected_fn or nil
+
 local function path_exists(path)
   return vim.fn.isdirectory(path) == 1
 end

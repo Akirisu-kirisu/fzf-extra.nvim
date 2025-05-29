@@ -3,6 +3,7 @@ local utils = require("extras.utils")
 local home = utils.get_user_home()
 
 _G.select_configuration_lua_plugins = function(opts)
+  utils.last_selected(select_configuration_lua_plugins)
   opts = opts or {}
   opts.prompt = "Plugin Links> "
 

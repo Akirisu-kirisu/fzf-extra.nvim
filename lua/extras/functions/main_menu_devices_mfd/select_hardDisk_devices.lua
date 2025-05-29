@@ -3,6 +3,7 @@ local extra_actions = require("extras.actions")
 local utils = require("extras.utils")
 
 _G.select_hardDisk_devices = function(opts)
+	utils.last_selected(select_hardDisk_devices)
 	opts = opts or {}
 	opts.prompt = "G&Devices Directories> "
 	opts.fn_transform = function(x)
