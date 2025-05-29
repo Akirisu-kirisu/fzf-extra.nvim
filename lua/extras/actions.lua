@@ -123,6 +123,7 @@ function M.open_dir_tmux(selected)
 				if choice == "s" then
 					-- Switch to existing session
 					vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+					vim.fn.system({ "zoxide", "add", selected_path })
 				elseif choice == "c" then
 					local sub_choice = vim.fn.input("Create new session: [a]utomatic or [m]anual name? ")
 
@@ -132,6 +133,7 @@ function M.open_dir_tmux(selected)
 						local auto_name = tmux_sesson_identifier .. "/" .. last_name
 
 						vim.fn.system("tmux new-session -d -s " .. auto_name .. ' "cd ' .. selected_path .. '; bash"')
+						vim.fn.system({ "zoxide", "add", selected_path })
 						vim.fn.system("tmux switch-client -t " .. auto_name)
 					elseif sub_choice == "m" then
 						local new_name = vim.fn.input("Enter new session name: ")
@@ -139,6 +141,7 @@ function M.open_dir_tmux(selected)
 							vim.fn.system(
 								"tmux new-session -d -s " .. new_name .. ' "cd ' .. selected_path .. '; bash"'
 							)
+							vim.fn.system({ "zoxide", "add", selected_path })
 							vim.fn.system("tmux switch-client -t " .. new_name)
 						else
 							print("No session name provided. Aborting.")
@@ -152,7 +155,7 @@ function M.open_dir_tmux(selected)
 			else
 				-- Create and switch to the session if it doesn't already exist
 				vim.fn.system("tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"')
-
+				vim.fn.system({ "zoxide", "add", selected_path })
 				vim.fn.system("tmux attach -t " .. tmux_session_name)
 				vim.fn.system("tmux switch-client -t " .. tmux_session_name)
 			end
