@@ -111,7 +111,7 @@ _G.select_links = function(opts)
   for _, link in ipairs(links) do
     local padded_name = string.format("%-" .. ui.max_alias_len .. "s", link.alias)
     local padded_desc = string.format("%-" .. ui.max_path_len .. "s", link.path)
-    local url = string.format("%-" .. #link.alias + 2 .. "s", "(" .. link.alias .. ")") -- +2 for the parentheses
+    local url = string.format("%-" .. #link.alias + 2 .. "s", "⟨" .. link.alias .. "⟩") -- +2 for the parentheses
 
     table.insert(
       fzf_entries,
