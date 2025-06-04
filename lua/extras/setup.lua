@@ -5,6 +5,17 @@ local function hl_validate(hl)
 end
 
 return {
+  previewers = {
+    builtin = {
+      extensions = {
+        -- force image preview to use viu or chafa
+        ["png"] = { "viu", "-w", "40", "-h", "20" },
+        ["jpg"] = { "viu", "-w", "40", "-h", "20" },
+        ["jpeg"] = { "viu", "-w", "40", "-h", "20" },
+        ["gif"] = { "chafa", "--symbols", "block", "--size", "40x20" },
+      }
+    }
+  },
   { "default-title", "telescope" }, -- base profile
   desc = "match telescope default highlights|keybinds",
   files = {

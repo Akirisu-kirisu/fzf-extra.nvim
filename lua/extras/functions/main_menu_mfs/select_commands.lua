@@ -5,7 +5,7 @@ _G.select_commands = function(opts)
   opts = opts or {}
   opts.prompt = opts.prompt or "Select Command> "
   local home = os.getenv("HOME")
-  local file = home .. "/shell/commands.txt"
+  local file = home .. "/.shell/commands.txt"
 
   -- Read and parse commands file into a table of { display = ..., cmd = ... }
   local lines = {}
