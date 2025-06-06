@@ -83,7 +83,7 @@ _G.select_main_menu_mfs = function()
 	local opts = {
 		prompt = "Select Option> ",
 		fzf_opts = {
-			["--preview"] = "echo {}",
+            ["--preview"] = "echo {}",
 		},
 		actions = { -- Correct key here
 			["default"] = function(selected)
@@ -93,9 +93,12 @@ _G.select_main_menu_mfs = function()
 				elseif selected[1] == "Plugins" then
 					-- If "Links" is selected, you can add code to handle that case here
 					_G.select_configuration_lua_plugins()
-				elseif selected[1] == "Commands" then
+				elseif selected[1] == "Terminal Commands" then
 					--   -- If "Links" is selected, you can add code to handle that case here
-					_G.select_commands()
+					_G.select_terminal_commands()
+				elseif selected[1] == "Neovim Cmdline" then
+					--   -- If "Links" is selected, you can add code to handle that case here
+					_G.select_nvim_commands()
 				elseif selected[1] == "Links" then
 					--   -- If "Links" is selected, you can add code to handle that case here
 					_G.select_links()
@@ -110,7 +113,7 @@ _G.select_main_menu_mfs = function()
 		},
 	}
 	-- Define the choices for the fzf menu
-	local choices = { "Plugins", "Git Repos", "Links", "Commands", "API", "Packages" }
+	local choices = { "Plugins", "Git Repos", "Links", "Terminal Commands", "Neovim Cmdline", "API", "Packages" }
 
 	-- Open fzf for selecting between "Links" or "Git Repos"
 	fzf_lua.fzf_exec(choices, opts)

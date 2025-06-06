@@ -1,7 +1,7 @@
 local fzf_lua = require("fzf-lua")
 local utils = require("extras.utils")
 
-_G.select_commands = function(opts)
+_G.select_terminal_commands = function(opts)
   opts = opts or {}
   opts.prompt = opts.prompt or "Select Command> "
   local home = os.getenv("HOME")
@@ -97,102 +97,39 @@ _G.select_commands = function(opts)
   fzf_lua.fzf_exec(entries, opts)
 end
 
--- _G.select_commands = function(opts)
---   utils.last_selected(select_commands)
---   opts = opts or {}
---   opts.prompt = "Scripts> "
---
---   opts.actions = {
---     ["default"] = {
---       fn = function(selected)
---         if type(selected) == "table" then
---           selected = table.concat(selected, " ")
---         end
---
---         print("DEBUGPRINT[187]: fzf.lua:1135: selected=" .. selected)
---
---         -- Ensure overseer is available
---         local success, overseer = pcall(require, "overseer")
---         if not success then
---           print "Error: 'overseer' module is not installed."
---           return
---         end
---
---         -- Create task
---         local task = require("overseer").new_task {
---           name = selected,
---           cmd = selected,
---           on_exit = function(exit_code, output)
---             -- Custom handling based on exit code and output
---             if exit_code == 0 then
---               print "Task completed successfully!"
---             else
---               print("Task failed with exit code " .. exit_code)
---               print("Error output: " .. (output or "No output"))
---             end
---           end,
---         }
---
---         -- Start the task
---         task:start()
---
---         -- Toggle Overseer UI (optional)
---         vim.cmd "OverseerToggle"
---       end,
---     },
---     ["tab"] = {
---       fn = function(selected)
---         if type(selected) == "table" then
---           selected = table.concat(selected, " ")
---         end
---
---         -- Execute the link directly based on the OS
---         if package.config:sub(1, 1) == "\\" then
---           -- For Windows, use 'start' or 'explorer' to open the URL (paste the link into the browser)
---           os.execute("start " .. selected)
---         else
---           -- Construct the terminal command to run
---           -- Construct the terminal command to run with alacritty
---           local terminal_command = 'alacritty -e bash -c "'
---             .. selected
---             .. '; exec bash"'
---
---           -- Open the terminal in Neovim and run the command
---           vim.cmd("term " .. terminal_command)
---         end
---       end,
---     },
---     ["ctrl-y"] = {
---       fn = function(selected)
---         local text = table.concat(selected, "\n")
---         vim.fn.setreg("+", text)
---         print("Command Copied: " .. text)
---       end,
---     },
---   }
---
---   -- Predefined array of popular links (with the base domain)
---   local scripts = {
---     "npm create vite@latest",
---     "bun create vite@latest",
---     "bun create next-app",
---     "npx sv create",
---     "bun install @tailwindcss/typography",
---     [[ Get-ChildItem -Path . -Recurse -Directory -Force -Include ".git" | Remove-Item -Recurse -Force ]],
---     "bun install",
---     "gh auth login",
---     "bun run dev --open",
---     "bun run dev",
---     "pnpm install",
---     "npm run dev",
---     "npm run build",
---     "npm run e2e",
---     "npm run test:e2e",
---     "npx shadcn@latest init",
---     "npx shadcn@latest add button",
---     "npx create-next-app@latest",
---   }
---
---   -- Execute fzf with the predefined popular links
---   fzf_lua.fzf_exec(scripts, opts)
--- end
+_G.select_nvim_commands = function(opts)
+  opts = opts or {}
+  opts.prompt = "Regex Rename> "
+
+  -- Regex snippets with descriptions
+  local scripts = {
+    { cmd = "'<,'>s/\\v(\\w+)\\s*=\\s*(\\w+)/\\2 = \\1/g", desc = "Swap LHS and RHS of assignments" },
+    { cmd = "'<,'>s/\\v(.*):\\s*(.*)/\\2: \\1/g", desc = "Swap colon-separated key-value pairs" },
+    { cmd = "'<,'>s/\\v(\\d{4})-(\\d{2})-(\\d{2})/\\3\\/\\2\\/\\1/g", desc = "YYYY-MM-DD to DD/MM/YYYY" },
+  }
+
+  -- Format each item for display in fzf
+  local display_items = vim.tbl_map(function(item)
+    return string.format("%s | %s", item.cmd, item.desc)
+  end, scripts)
+
+  -- Define action on selection
+  opts.actions = {
+    ['default'] = function(selected)
+      local cmd = selected[1]:match("^(.-)%s+|")
+      if cmd then
+        vim.cmd("vnew") -- open vertical split
+        vim.api.nvim_buf_set_lines(0, 0, -1, false, {
+          "-- Edit and run this regex in visual mode",
+          cmd,
+        })
+        vim.bo.buftype = "nofile"
+        vim.bo.bufhidden = "wipe"
+        vim.bo.swapfile = false
+        vim.bo.filetype = "vim"
+      end
+    end,
+  }
+
+  fzf_lua.fzf_exec(display_items, opts)
+end
