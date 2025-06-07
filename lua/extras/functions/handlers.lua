@@ -18,7 +18,6 @@ require("extras.functions.main_menu_devices_mfd.select_hardDisk_devices")
 
 require("extras.directories")
 
-
 local M = {}
 
 _G.select_directory_global_mfe = function(opts)
@@ -83,7 +82,7 @@ _G.select_main_menu_mfs = function()
 	local opts = {
 		prompt = "Select Option> ",
 		fzf_opts = {
-            ["--preview"] = "echo {}",
+			["--preview"] = "echo {}",
 		},
 		actions = { -- Correct key here
 			["default"] = function(selected)
@@ -148,7 +147,7 @@ _G.main_menu_devices_mfd = function()
 end
 
 _G.select_filePath = function(opts)
-	utils.last_selected(select_filePath)
+	-- utils.last_selected(select_filePath)
 	opts = opts or {}
 	opts.prompt = "Current Dir or File> "
 
@@ -159,27 +158,22 @@ _G.select_filePath = function(opts)
 					selected = table.concat(selected, " ")
 				end
 
-				-- Get current directory and file name
-				local current_dir = vim.fn.getcwd()
-				local current_file = vim.fn.expand("%:t") -- Get current file name
-
-				-- Combine the directory and the file name
-				local full_path = current_dir .. "/" .. current_file
-				local dir_path = current_dir -- Just the directory
+				-- Get full path and directory of the current buffer
+				local full_path = vim.fn.expand("%:p")
+				local current_dir = vim.fn.expand("%:p:h")
 
 				-- Decide whether to use full path or just directory path
 				local path_to_copy
 				if selected == "Directory" then
-					path_to_copy = dir_path
+					path_to_copy = current_dir
 				else
 					path_to_copy = full_path
 				end
 
-				-- Print the path to the command line
 				vim.fn.setreg("+", path_to_copy)
 				print("Path: " .. path_to_copy)
+                vim.api.nvim_paste(path_to_copy, true, -1)
 
-				-- Optionally, copy the path to the system clipboard
 				if vim.fn.has("unix") == 1 then
 					os.execute("echo -n '" .. path_to_copy .. "' | xclip -selection clipboard")
 				elseif vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
