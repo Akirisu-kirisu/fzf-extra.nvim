@@ -58,6 +58,56 @@ _G.select_search_current_dir_packages = function(opts)
 			end,
 			exec_silent = true,
 		},
+		["ctrl-d"] = {
+			fn = function(selected)
+				if not selected or (type(selected) == "table" and #selected == 0) then
+					print("No selection provided")
+					return
+				end
+
+				-- Ensure selected is a table
+				local raw_packages = type(selected) == "table" and selected or { selected }
+				local packages = {}
+
+				-- Filter out version info (e.g. from "pkg: ^1.2.3" -> "pkg")
+				for _, line in ipairs(raw_packages) do
+					-- Trim whitespace and remove everything after the colon
+					local pkg = vim.trim(line):match("^[^:]+")
+					if pkg and pkg ~= "" then
+						table.insert(packages, pkg)
+					end
+				end
+
+				if #packages == 0 then
+					print("No valid packages to remove")
+					return
+				end
+
+				-- Construct the pnpm command
+				local cmd = { "pnpm", "remove", unpack(packages) }
+
+				-- Create the Overseer task
+				local task = require("overseer").new_task({
+					name = table.concat(cmd, " "),
+					cmd = cmd,
+					on_exit = function(exit_code, output)
+						if exit_code == 0 then
+							print("✅ pnpm remove succeeded")
+						else
+							print("❌ pnpm remove failed with exit code: " .. exit_code)
+							print("Output: " .. (output or "No output"))
+						end
+					end,
+				})
+
+				-- Start the task
+				task:start()
+
+				-- Optionally toggle Overseer UI
+				vim.cmd("OverseerToggle")
+			end,
+			exec_silent = false,
+		},
 	}
 
 	local current_dir = vim.fn.getcwd()
@@ -90,10 +140,10 @@ _G.select_search_current_dir_packages = function(opts)
 		table.insert(all_deps, k .. ": " .. v)
 	end
 
-    opts.fzf_opts = {
-        ["--preview"] = string.format("rg --context 5 --heading --line-number --color=always {} %s", package_json_path),
-        ["--preview-window"] = "right:60%:wrap",
-    }
+	opts.fzf_opts = {
+		["--preview"] = string.format("rg --context 5 --heading --line-number --color=always {} %s", package_json_path),
+		["--preview-window"] = "right:60%:wrap",
+	}
 	fzf_lua.fzf_exec(all_deps, opts)
 end
 
