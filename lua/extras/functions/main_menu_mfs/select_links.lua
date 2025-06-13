@@ -10,10 +10,15 @@ _G.select_links = function(opts)
   opts.prompt = "Links> "
 
   opts.actions = {
+      ["alt-m"] = {
+			fn = function(selected)
+				_G.select_main_menu_mfs()
+			end,
+			exec_silent = true,
+		},
     ["default"] = {
       fn = function(selected)
         local selected_url = utils.selected_path(selected)
-        print("DEBUGPRINT[190]: fzf.lua:931: selected=" .. selected_url)
         -- Ensure the link is properly formatted with 'https://'
         local repo_url = "https://" .. selected_url
         --

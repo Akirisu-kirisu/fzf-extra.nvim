@@ -73,7 +73,7 @@ _G.select_hardDisk_devices = function(opts)
 
 			-- Handle root directory case
 			if selected_path == "/dev/sda1" then
-				selected_path = '/'
+				selected_path = "/"
 				tmux_session_name = "root"
 			else
 				tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
@@ -89,18 +89,10 @@ _G.select_hardDisk_devices = function(opts)
 				end
 				-- if vim.fn.executable "tmux" == 1 then
 				if is_tmux_running() then
-					-- print(
-					--   "DEBUGPRINT[1]: fzf.lua:359: tmux_session_name="
-					--     .. vim.inspect(tmux_session_name)
-					-- )
 					-- Check if the tmux session exists by using tmux has-session command
 					local tmux_session_exists =
 						vim.fn.system("tmux has-session -t " .. tmux_session_name .. ">/dev/null 2>&1")
 
-					-- print(
-					--   "DEBUGPRINT[1]: fzf.lua:376: tmux_session_exists="
-					--     .. tmux_session_exists
-					-- )
 					vim.fn.system(
 						"tmux new-session -d -s " .. tmux_session_name .. ' "cd ' .. selected_path .. '; bash"'
 					)
@@ -185,6 +177,21 @@ _G.select_hardDisk_devices = function(opts)
 				print("Changed directory to: " .. selected_path)
 			end
 		end,
+		["alt-s"] = {
+			fn = function(selected)
+				extra_actions.horizontal(selected)
+			end,
+		},
+		["alt-v"] = {
+			fn = function(selected)
+				extra_actions.vertical(selected)
+			end,
+		},
+		["ctrl-o"] = {
+			fn = function(selected)
+				vim.cmd("Oil ")
+			end,
+		},
 	}
 
 	local disks = {}

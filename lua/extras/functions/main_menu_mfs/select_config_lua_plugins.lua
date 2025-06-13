@@ -62,6 +62,12 @@ _G.select_configuration_lua_plugins = function(opts)
 				end
 			end,
 		},
+        ["alt-m"] = {
+			fn = function(selected)
+				_G.select_main_menu_mfs()
+			end,
+			exec_silent = true,
+		},
 		["ctrl-y"] = {
 			fn = function(selected)
 				if type(selected) == "table" then

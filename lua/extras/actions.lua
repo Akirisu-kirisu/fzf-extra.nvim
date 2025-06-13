@@ -57,12 +57,8 @@ function M.open_dir_tmux(selected)
 		end
 		-- if vim.fn.executable "tmux" == 1 then
 		if is_tmux_running() then
-			-- print(
-			--   "DEBUGPRINT[1]: fzf.lua:359: tmux_session_name="
-			--     .. vim.inspect(tmux_session_name)
-			-- )
 			-- Check if the tmux session exists by using tmux has-session command
-			-- local tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name)
+			-- locl tmux_session_exists = vim.fn.system("tmux has-session -t " .. tmux_session_name)
 
 			-- if string.find(tmux_session_exists, "can't find session: " .. tmux_session_name) then
 			-- tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
@@ -260,4 +256,27 @@ function M.open_oil(selected)
 	end
 end
 
+
+function M.horizontal(selected)
+	local selected_path = utils.selected_path(selected)
+	-- Open a horizontal split
+	vim.cmd("split")
+
+	-- Use Oil to open the selected location
+	-- 'selected[1]' is the selected path from fzf-lua
+	vim.cmd("Oil " .. vim.fn.fnameescape(selected_path))
+end
+
+function M.vertical(selected)
+	local selected_path = utils.selected_path(selected)
+	-- Open a horizontal split
+	local old_splitright = vim.o.splitright
+	vim.o.splitright = true
+	vim.cmd("vsplit")
+	vim.o.splitright = old_splitright
+
+	-- Use Oil to open the selected location
+	-- 'selected[1]' is the selected path from fzf-lua
+	vim.cmd("Oil " .. vim.fn.fnameescape(selected_path))
+end
 return M

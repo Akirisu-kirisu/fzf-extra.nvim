@@ -11,6 +11,12 @@ _G.select_search_current_dir_packages = function(opts)
 
 	local scratch_pad = ""
 	opts.actions = {
+        ["alt-m"] = {
+			fn = function(selected)
+				_G.select_main_menu_mfs()
+			end,
+			exec_silent = true,
+		},
 		["default"] = {
 			fn = function(selected)
 				-- Get the selected dependency name (strip version info)

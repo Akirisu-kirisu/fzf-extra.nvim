@@ -8,6 +8,12 @@ local utils = require("extras.utils")
 	opts.prompt = "API> "
 
 	opts.actions = {
+        ["alt-m"] = {
+			fn = function(selected)
+				_G.select_main_menu_mfs()
+			end,
+			exec_silent = true,
+		},
 		["ctrl-y"] = {
 			fn = function(selected)
 				-- Change the print statement to use vim.inspect to safely print the table

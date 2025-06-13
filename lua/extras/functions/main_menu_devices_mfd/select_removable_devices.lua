@@ -34,6 +34,21 @@ _G.select_removable_devices = function(opts)
 		["tab"] = function(selected, opts)
 			extra_actions.open_dir_tmux(selected)
 		end,
+		["alt-s"] = {
+			fn = function(selected)
+				extra_actions.horizontal(selected)
+			end,
+		},
+		["alt-v"] = {
+			fn = function(selected)
+				extra_actions.vertical(selected)
+			end,
+		},
+		["ctrl-o"] = {
+			fn = function(selected)
+				vim.cmd("Oil ")
+			end,
+		},
 	}
 
 	-- Initialize directories list (use a global variable to store them)

@@ -65,6 +65,12 @@ _G.select_git_repo = function(opts)
 		end
 	end
 	opts.actions = {
+        ["alt-m"] = {
+			fn = function(selected)
+				_G.select_main_menu_mfs()
+			end,
+			exec_silent = true,
+		},
 		["default"] = {
 			fn = function(selected)
 				-- Get the GitHub username
@@ -83,7 +89,6 @@ _G.select_git_repo = function(opts)
 
 				-- Run the git clone command
 				local result = "git clone " .. clone_url
-				print("DEBUGPRINT[7]: fzf.lua:618: cmd=" .. vim.inspect(result))
 				-- Run the command using vim.fn.system to capture the output
 				-- local result = vim.fn.system(cmd)
 				local task = require("overseer").new_task({
@@ -112,7 +117,6 @@ _G.select_git_repo = function(opts)
 
 				-- Run the git clone command
 				local cmd = "git clone " .. clone_url
-				print("DEBUGPRINT[7]: fzf.lua:618: cmd=" .. vim.inspect(cmd))
 				-- Run the command using vim.fn.system to capture the output
 				local result = vim.fn.system(cmd)
 
