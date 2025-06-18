@@ -117,8 +117,12 @@ return {
   },
   actions = {
     files = {
-      -- ["alt-s"] = actions.file_split,
-      -- ["alt-v"] = actions.file_vsplit,
+      ["alt-s"] = actions.file_split,
+      ["alt-v"] = function(selected)
+          vim.cmd("wincmd l") -- move to rightmost window
+          vim.cmd("vsplit")   -- split right of it
+          require("fzf-lua.actions").file_edit(selected[1])
+      end,
       ["alt-e"] = actions.file_tabedit,
       ["enter"] = actions.file_edit_or_qf,
       ["alt-q"] = actions.file_sel_to_qf,
