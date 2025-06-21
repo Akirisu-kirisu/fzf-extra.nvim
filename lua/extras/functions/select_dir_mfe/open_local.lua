@@ -60,7 +60,7 @@ _G.select_local_directories = function(opts)
 	}
 
 	local fzf_list = {}
-	local fd_command = "fd --type d --exclude node_modules --max-depth 7 ."
+	local fd_command = "fd --type d --exclude node_modules --max-depth 4 ."
 
 	-- Execute the 'fd' command and capture the output
 	local output = vim.fn.systemlist(fd_command)
