@@ -20,7 +20,7 @@ _G.select_links = function(opts)
       fn = function(selected)
         local selected_url = utils.selected_path(selected)
         -- Ensure the link is properly formatted with 'https://'
-        local repo_url = "https://" .. selected_url
+        local repo_url = selected_url
         --
         -- -- Check if the operating system is Windows or non-Windows
         if utils.is_windows() then
@@ -38,75 +38,75 @@ _G.select_links = function(opts)
   -- Predefined array of popular links (with the base domain)
   local links = {
     {
-      alias = "facebook.com",
+      alias = "https://facebook.com",
       path = "Social media platform for connecting with friends and communities.",
     },
     {
-      alias = "ui.shadcn.com",
+      alias = "https://ui.shadcn.com",
       path = "UI components and design system for building modern web apps.",
     },
     {
-      alias = "chatgpt.com",
+      alias = "https://chatgpt.com",
       path = "Conversational AI by OpenAI for assistance, coding, and more.",
     },
-    { alias = "youtube.com", path = "Video sharing and streaming platform." },
+    { alias = "https://youtube.com", path = "Video sharing and streaming platform." },
     {
-      alias = "github.com",
+      alias = "https://github.com",
       path = "Code hosting platform for version control and collaboration.",
     },
-    { alias = "dotfyle.com", path = "Neovim plugin manager and explorer." },
-    { alias = "outlook.com", path = "Web-based email service by Microsoft." },
-    { alias = "comick.io", path = "Online comic and manga reading platform." },
-    { alias = "mgeko.cc", path = "Another online manga/comic platform." },
+    { alias = "https://dotfyle.com", path = "Neovim plugin manager and explorer." },
+    { alias = "https://outlook.com", path = "Web-based email service by Microsoft." },
+    { alias = "https://comick.io", path = "Online comic and manga reading platform." },
+    { alias = "https://mgeko.cc", path = "Another online manga/comic platform." },
     {
-      alias = "asuracomic.net",
+      alias = "https://asuracomic.net",
       path = "Site for reading translated manga and webtoons.",
     },
-    { alias = "gmail.com", path = "Google's email service." },
-    { alias = "google.com", path = "Search engine and tech services provider." },
+    { alias = "https://gmail.com", path = "Google's email service." },
+    { alias = "https://google.com", path = "Search engine and tech services provider." },
     {
-      alias = "reddit.com",
+      alias = "https://reddit.com",
       path = "Community-based discussion and content sharing site.",
     },
-    { alias = "neovim.io", path = "Official site for the Neovim text editor." },
+    { alias = "https://neovim.io", path = "Official site for the Neovim text editor." },
     {
-      alias = "fonts.google.com",
+      alias = "https://fonts.google.com",
       path = "Google Fonts library for open-source typography.",
     },
     {
-      alias = "search.nixos.org",
+      alias = "https://search.nixos.org",
       path = "Search tool for NixOS packages and options.",
     },
     {
-      alias = "storyset.com/",
+      alias = "https://storyset.com/",
       path = "Free animated illustrations and vector art for web and design projects.",
     },
     {
-      alias = "msn.com/en-ph/weather",
+      alias = "https://msn.com/en-ph/weather",
       path = "Local weather forecasts and updates for the Philippines from MSN.",
     },
     {
-      alias = "onehack.us/c/tutorials-methods/7",
+      alias = "https://onehack.us/c/tutorials-methods/7",
       path = "Forum section with tutorials and methods for tech enthusiasts and hackers.",
     },
     {
-      alias = "www.patterns.dev/posts/tree-shaking",
+      alias = "https://www.patterns.dev/posts/tree-shaking",
       path = "In-depth guide on JavaScript tree shaking for optimizing web bundlers.",
     },
     {
-      alias = "github.com/leonardomso/33-js-concepts",
+      alias = "https://github.com/leonardomso/33-js-concepts",
       path = "JavaScript best practices: factories and classes explained (Concept #14).",
     },
     {
-      alias = "getintopc.com/",
+      alias = "https://getintopc.com/",
       path = "Website offering free downloads of software and PC applications.",
     },
     {
-      alias = "www.freesoftwarefiles.com/",
+      alias = "https://www.freesoftwarefiles.com/",
       path = "Directory of free software downloads for Windows and Mac.",
     },
     {
-      alias = "downloadlyir.com",
+      alias = "https://downloadlyir.com",
       path = "Resource site for downloading premium software and tools for free.",
     },
     {
