@@ -110,19 +110,19 @@ _G.select_links = function(opts)
       path = "Resource site for downloading premium software and tools for free.",
     },
     {
-      alias = "http://localhost:5173/",
+      alias = "localhost:5173/",
       path = "Vite Local Development",
     },
     {
-      alias = "http://localhost:3000",
+      alias = "localhost:3000",
       path = "React Local Development",
     },
     {
-      alias = "http://localhost:4173",
+      alias = "localhost:4173",
       path = "Vite Prod Development",
     },
     {
-      alias = "http://localhost:8000",
+      alias = "localhost:8000",
       path = "Cloudflare Local Development",
     },
   }
