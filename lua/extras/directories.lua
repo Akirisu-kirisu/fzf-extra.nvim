@@ -37,12 +37,28 @@ local windows_dirs = {
   { path = utils.home .. "\\.local\\share\\chezmoi", alias = "Chezmoi" },
 }
 
+-- local unix_dirs = {
+--   { path = utils.home .. "/Downloads", alias = "Downloads" },
+--   { path = utils.home .. "/Documents", alias = "Documents" },
+--   { path = utils.home .. "/Videos", alias = "Videos" },
+--   { path = utils.home .. "/Music", alias = "Music" },
+--   { path = utils.home .. "/Pictures", alias = "Pictures" },
+--   { path = utils.home .. "/.config", alias = "config" },
+--   { path = utils.home .. "/.local/share/nvim", alias = "nvim-data" },
+--   { path = utils.home .. "/.local/share/chezmoi", alias = "chezmoi" },
+--   { path = utils.home .. "/.local/share/fonts", alias = "fonts" },
+--   { path = utils.home .. "/nixos", alias = "nixos" },
+--   { path = utils.home .. "/", alias = "Home" },
+-- }
+
 local unix_dirs = {
   { path = utils.home .. "/Downloads", alias = "Downloads" },
   { path = utils.home .. "/Documents", alias = "Documents" },
   { path = utils.home .. "/Videos", alias = "Videos" },
   { path = utils.home .. "/Music", alias = "Music" },
   { path = utils.home .. "/Pictures", alias = "Pictures" },
+  { path = utils.home .. "/.config", alias = ".config" },
+  { path = utils.home .. "/.local", alias = ".local" },
   { path = utils.home .. "/.config/nvim", alias = "nvim" },
   { path = utils.home .. "/.local/share/nvim", alias = "nvim-data" },
   { path = utils.home .. "/.config/kitty", alias = "kitty" },

@@ -201,6 +201,8 @@ _G.select_hidden_directories = function(opts)
 	opts.actions = {
 		["default"] = function(selected)
 			vim.cmd("cd " .. selected[1])
+            -- print('DEBUGPRINT[70]: handlers.lua:203: selected=' .. vim.inspect(selected[1]))
+			vim.cmd("Oil " .. selected[1])
 		end,
 
 		["tab"] = function(selected)
@@ -209,7 +211,8 @@ _G.select_hidden_directories = function(opts)
 	}
 	-- Modify the fd command to correctly search hidden directories and exclude .git
 	-- Also, ensure to include directories that are hidden (starting with a dot)
-	fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules --absolute-path --max-depth 1 .", opts)
+	-- fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules '.*' ! -name '.' --absolute-path --max-depth 1 .", opts)
+    fzf_lua.fzf_exec("find . -maxdepth 1 -type d -name '.*' ! -name '.' -exec realpath {} \\;", opts)
 end
 
 _G.select_history_directories = function(opts)
