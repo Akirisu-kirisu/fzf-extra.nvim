@@ -100,6 +100,98 @@ _G.select_terminal_commands = function(opts)
 	fzf_lua.fzf_exec(entries, opts)
 end
 
+_G.select_terminal_history = function(opts)
+	opts = opts or {}
+	opts.prompt = opts.prompt or "Select Bash History> "
+	local home = os.getenv("HOME")
+	local file = home .. "/.bash_history"
+
+	local lines, seen, cmd_lookup = {}, {}, {}
+
+	-- Read .bash_history line by line
+	for line in io.lines(file) do
+		line = line:gsub("^%s*(.-)%s*$", "%1")
+		if line ~= "" and not seen[line] then
+			seen[line] = true
+			local display = string.format(" %-60s  %s", line, "from history")
+			local entry = { display = display, cmd = line }
+			table.insert(lines, entry)
+			cmd_lookup[display] = entry
+		end
+	end
+
+	opts.actions = {
+		["alt-m"] = {
+			fn = function()
+				_G.select_main_menu_mfs()
+			end,
+			exec_silent = true,
+		},
+		["default"] = function(selected)
+			local sel = selected[1]
+			local cmd = cmd_lookup[sel] and cmd_lookup[sel].cmd or sel
+
+			-- Copy to clipboard (for external use too, if needed)
+			vim.fn.setreg("+", cmd)
+			print("Command Copied and Pasted: " .. cmd)
+
+			-- Paste at cursor
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+			vim.api.nvim_put({ cmd }, "c", true, true) -- after cursor
+
+			-- Highlight the newly inserted text
+			local ns_id = vim.api.nvim_create_namespace("select_cmd_highlight")
+			local line_len = #cmd
+			vim.api.nvim_buf_add_highlight(0, ns_id, "Visual", row - 1, col, col + line_len)
+
+			-- Remove the highlight after a short time (e.g., 300ms)
+			vim.defer_fn(function()
+				vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+			end, 300)
+		end,
+		["ctrl-o"] = function(selected)
+			local sel = selected[1]
+			local cmd = cmd_lookup[sel] and cmd_lookup[sel].cmd or sel
+			local task = require("overseer").new_task({
+				name = cmd,
+				cmd = cmd,
+				on_exit = function(exit_code, output)
+					if exit_code == 0 then
+						print("Task completed successfully!")
+					else
+						print("Task failed with exit code " .. exit_code)
+						print("Error output: " .. (output or "No output"))
+					end
+				end,
+			})
+			task:start()
+			vim.cmd("OverseerToggle")
+		end,
+		["tab"] = {
+			fn = function(selected)
+				local sel = selected[1]
+				local cmd = cmd_lookup[sel] and cmd_lookup[sel].cmd or sel
+				local terminal_command = 'alacritty -e bash -c "' .. cmd .. '; exec bash"'
+				vim.cmd("term " .. terminal_command)
+			end,
+		},
+		["ctrl-y"] = {
+			fn = function(selected)
+				local sel = selected[1]
+				local cmd = cmd_lookup[sel] and cmd_lookup[sel].cmd or sel
+				vim.fn.setreg("+", cmd)
+				print("Command Copied: " .. cmd)
+			end,
+		},
+	}
+
+	local entries = {}
+	for _, entry in ipairs(lines) do
+		table.insert(entries, entry.display)
+	end
+
+	require("fzf-lua").fzf_exec(entries, opts)
+end
 _G.select_nvim_commands = function(opts)
 	opts = opts or {}
 	opts.prompt = "Regex Rename> "
@@ -119,7 +211,7 @@ _G.select_nvim_commands = function(opts)
 
 	-- Define action on selection
 	opts.actions = {
-        ["alt-m"] = {
+		["alt-m"] = {
 			fn = function(selected)
 				_G.select_main_menu_mfs()
 			end,

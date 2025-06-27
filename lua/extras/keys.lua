@@ -31,6 +31,7 @@ local mappings = {
 		description = "Select global directory for MFE",
 	},
 	{ cmd = "Directories", func = "select_main_menu_mfs", key = "mfs", description = "Select main menu for MFS" },
+    { cmd = "Directories", func = "select_terminal_history", key = "<leader>fh", description = "Select main menu for MFS" },
 	{
 		cmd = "Directories",
 		func = "main_menu_devices_mfd",
