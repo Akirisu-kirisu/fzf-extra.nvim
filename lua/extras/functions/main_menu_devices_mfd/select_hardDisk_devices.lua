@@ -177,7 +177,7 @@ _G.select_hardDisk_devices = function(opts)
 				print("Changed directory to: " .. selected_path)
 			end
 		end,
-		["alt-s"] = {
+		["ctrl-s"] = {
 			fn = function(selected)
 				extra_actions.horizontal(selected)
 			end,

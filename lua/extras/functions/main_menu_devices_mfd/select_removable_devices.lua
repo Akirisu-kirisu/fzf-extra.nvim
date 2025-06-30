@@ -34,7 +34,7 @@ _G.select_removable_devices = function(opts)
 		["tab"] = function(selected, opts)
 			extra_actions.open_dir_tmux(selected)
 		end,
-		["alt-s"] = {
+		["ctrl-s"] = {
 			fn = function(selected)
 				extra_actions.horizontal(selected)
 			end,

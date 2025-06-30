@@ -23,7 +23,7 @@ _G.select_local_directories = function(opts)
 				extra_actions.open_oil(selected)
 			end,
 		},
-		["alt-s"] = {
+		["ctrl-s"] = {
 			fn = function(selected)
                 extra_actions.horizontal(selected)
 			end,
@@ -36,6 +36,11 @@ _G.select_local_directories = function(opts)
 		["ctrl-o"] = {
 			fn = function(selected)
                 vim.cmd("Oil ")
+            end,
+		},
+		["alt-s"] = {
+			fn = function(selected)
+                _G.select_hidden_directories()
             end,
 		},
 		-- Custom key binding for the 'Tab' key (using 'ctrl-v' + Tab for input mapping)
@@ -100,11 +105,16 @@ _G.select_local_directories_max_1 = function(opts)
 			end,
 			exec_silent = true,
 		},
-        ["alt-s"] = {
+        ["ctrl-s"] = {
             fn = function(selected)
                 extra_actions.horizontal(selected)
             end,
         },
+        ["alt-s"] = {
+			fn = function(selected)
+                _G.select_hidden_directories()
+            end,
+		},
 		["alt-v"] = {
 			fn = function(selected)
                 extra_actions.vertical(selected)

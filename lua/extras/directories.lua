@@ -69,6 +69,7 @@ local unix_dirs = {
   { path = utils.home .. "/.config/hypr", alias = "hypr" },
   { path = utils.home .. "/.config/xplr", alias = "xplr" },
   { path = utils.home .. "/.config/helix", alias = "helix" },
+  { path = utils.home .. "/.config/dash", alias = "dash" },
   { path = utils.home .. "/.local/share/chezmoi", alias = "chezmoi" },
   { path = utils.home .. "/.local/share/fonts", alias = "fonts" },
   { path = utils.home .. "/nixos", alias = "nixos" },

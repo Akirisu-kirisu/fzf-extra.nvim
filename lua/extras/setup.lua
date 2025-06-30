@@ -117,8 +117,8 @@ return {
   },
   actions = {
     files = {
-      ["alt-s"] = actions.file_split,
-      ["alt-v"] = function(selected)
+      ["ctrl-s"] = actions.file_split,
+      ["ctrl-v"] = function(selected)
           vim.cmd("wincmd l") -- move to rightmost window
           vim.cmd("vsplit")   -- split right of it
           require("fzf-lua.actions").file_edit(selected[1])

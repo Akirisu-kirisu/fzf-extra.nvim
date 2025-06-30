@@ -205,6 +205,16 @@ _G.select_hidden_directories = function(opts)
 			vim.cmd("Oil " .. selected[1])
 		end,
 
+		["alt-s"] = function()
+            _G.select_hidden_files()
+		end,
+
+        ["alt-m"] = {
+            fn = function(selected)
+                _G.select_directory_global_mfe()
+            end,
+        },
+
 		["tab"] = function(selected)
 			extra_actions.open_dir_tmux(selected)
 		end,
@@ -213,6 +223,38 @@ _G.select_hidden_directories = function(opts)
 	-- Also, ensure to include directories that are hidden (starting with a dot)
 	-- fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules '.*' ! -name '.' --absolute-path --max-depth 1 .", opts)
     fzf_lua.fzf_exec("find . -maxdepth 1 -type d -name '.*' ! -name '.' -exec realpath {} \\;", opts)
+end
+
+_G.select_hidden_files = function(opts)
+	utils.last_selected(select_hidden_files)
+	opts = opts or {}
+	opts.prompt = "Hidden Files> "
+	opts.fn_transform = function(x)
+		return require("fzf-lua.utils").ansi_codes.magenta(x)
+	end
+	opts.actions = {
+		["default"] = function(selected)
+			vim.cmd("edit " .. vim.fn.fnameescape(selected[1]))
+		end,
+
+		["alt-s"] = function(selected)
+            _G.select_hidden_directories()
+		end,
+
+        ["alt-m"] = {
+            fn = function(selected)
+                _G.select_directory_global_mfe()
+            end,
+        },
+
+		["tab"] = function(selected)
+			extra_actions.open_file_tmux(selected)
+		end,
+	}
+
+	-- Use `find` to get hidden files (exclude `.` and `..`, use realpath for clarity)
+	local find_cmd = "find . -maxdepth 1 -type f -name '.*' -exec realpath {} \\;"
+	require("fzf-lua").fzf_exec(find_cmd, opts)
 end
 
 _G.select_history_directories = function(opts)
