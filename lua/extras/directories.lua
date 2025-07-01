@@ -59,6 +59,7 @@ local unix_dirs = {
   { path = utils.home .. "/Pictures", alias = "Pictures" },
   { path = utils.home .. "/.config", alias = ".config" },
   { path = utils.home .. "/.local", alias = ".local" },
+  { path = utils.home .. "/.local/bin", alias = "bin" },
   { path = utils.home .. "/.config/nvim", alias = "nvim" },
   { path = utils.home .. "/.local/share/nvim", alias = "nvim-data" },
   { path = utils.home .. "/.config/kitty", alias = "kitty" },
@@ -74,6 +75,16 @@ local unix_dirs = {
   { path = utils.home .. "/.local/share/fonts", alias = "fonts" },
   { path = utils.home .. "/nixos", alias = "nixos" },
   { path = utils.home .. "/", alias = "Home" },
+  { path = "/etc", alias = "etc", sudo = true },
+  { path = "/etc/sv", alias = "runit_sv", sudo = true },       -- for Void Linux runit services
+  { path = "/var/service", alias = "runit_service", sudo = true }, -- symlinks to enable services
+  { path = "/usr/local/bin", alias = "local_bin", sudo = true },   -- for custom scripts
+  { path = "/etc/doas.conf", alias = "doas", sudo = true },
+  { path = "/boot/loader/entries", alias = "boot_entries", sudo = true }, -- systemd-boot configs
+  { path = "/etc/hostname", alias = "hostname", sudo = true },
+  { path = "/etc/hosts", alias = "hosts", sudo = true },
+  { path = "/etc/resolv.conf", alias = "resolv", sudo = true },
+  { path = "/etc/network/interfaces", alias = "network", sudo = true }, -- or /etc/NetworkManager/system-connections/
 }
 
 _G.directories = _G.directories or {}
