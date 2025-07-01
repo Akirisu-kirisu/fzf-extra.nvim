@@ -202,6 +202,7 @@ _G.select_nvim_commands = function(opts)
 		{ cmd = "'<,'>s/\\v(.*):\\s*(.*)/\\2: \\1/g", desc = "Swap colon-separated key-value pairs" },
 		{ cmd = "'<,'>s/\\v(\\d{4})-(\\d{2})-(\\d{2})/\\3\\/\\2\\/\\1/g", desc = "YYYY-MM-DD to DD/MM/YYYY" },
 		{ cmd = "set filetype?", desc = "fIletype" },
+		{ cmd = "set filetype=sh", desc = "sh" },
 	}
 
 	-- Format each item for display in fzf
@@ -218,6 +219,13 @@ _G.select_nvim_commands = function(opts)
 			exec_silent = true,
 		},
 		["default"] = function(selected)
+			local cmd = selected[1]:match("^(.-)%s+|")
+			if cmd then
+				-- Open : command-line and paste the command
+				vim.api.nvim_feedkeys(":" .. cmd, "n", false)
+			end
+		end,
+		["tab"] = function(selected)
 			local cmd = selected[1]:match("^(.-)%s+|")
 			if cmd then
 				vim.cmd("vnew") -- open vertical split
