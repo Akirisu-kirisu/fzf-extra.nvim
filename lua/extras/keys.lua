@@ -38,11 +38,12 @@ local mappings = {
 		key = "mfd",
 		description = "Select main menu for devices MFD",
 	},
-	{ cmd = "Directories", func = "select_filePath", key = "<leader>fc", description = "Select file path" },
+	-- { cmd = "Directories", func = "select_filePath", key = "<leader>fc", description = "Select file path" },
 	{ cmd = "Directories", func = "select_git_commits", key = "mxe", description = "Select file path" },
 	{ cmd = "Directories", func = "select_local_directories_max_1", key = "mfw", description = "Select local directories" },
 	{ cmd = "Directories", func = "select_local_directories", key = "<leader>fw", description = "Select local directories" },
 	{ cmd = "Directories", func = "select_hidden_directories", key = "mfh", description = "Select hidden directories" },
+	{ cmd = "Directories", func = "select_nvim_commands", key = "<leader>fc", description = "Select hidden directories" },
 	{
 		cmd = "Directories",
 		func = "select_history_directories",
