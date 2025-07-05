@@ -35,6 +35,28 @@ _G.select_terminal_commands = function(opts)
 				-- If path is inside parentheses, extract it
 				sel = sel:match("⟨(.-)⟩")
 			end
+			vim.fn.setreg("+", sel)
+			print("Command Copied: " .. sel)
+            -- Paste at cursor
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+			vim.api.nvim_put({ sel }, "c", true, true) -- after cursor
+
+			-- Highlight the newly inserted text
+			local ns_id = vim.api.nvim_create_namespace("select_cmd_highlight")
+			local line_len = #cmd
+			vim.api.nvim_buf_add_highlight(0, ns_id, "Visual", row - 1, col, col + line_len)
+
+			-- Remove the highlight after a short time (e.g., 300ms)
+			vim.defer_fn(function()
+				vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+			end, 300)
+		end,
+		["alt-s"] = function(selected)
+			local sel = selected[1]
+			if sel:match("⟨(.-)⟩") then
+				-- If path is inside parentheses, extract it
+				sel = sel:match("⟨(.-)⟩")
+			end
 			local task = require("overseer").new_task({
 				name = sel,
 				cmd = sel,
@@ -56,7 +78,7 @@ _G.select_terminal_commands = function(opts)
 			vim.cmd("OverseerToggle")
 			-- Find cmd by display
 		end,
-		["tab"] = {
+		["ctrl-o"] = {
 			fn = function(selected)
 				local sel = selected[1]
 				if sel:match("⟨(.-)⟩") then

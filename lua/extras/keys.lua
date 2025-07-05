@@ -43,7 +43,7 @@ local mappings = {
 	{ cmd = "Directories", func = "select_local_directories_max_1", key = "mfw", description = "Select local directories" },
 	{ cmd = "Directories", func = "select_local_directories", key = "<leader>fw", description = "Select local directories" },
 	{ cmd = "Directories", func = "select_hidden_directories", key = "mfh", description = "Select hidden directories" },
-	{ cmd = "Directories", func = "select_nvim_commands", key = "<leader>fc", description = "Select hidden directories" },
+	{ cmd = "Directories", func = "select_nvim_commands ", key = "<leader>fc", description = "Select hidden directories" },
 	{
 		cmd = "Directories",
 		func = "select_history_directories",
@@ -59,6 +59,23 @@ vim.keymap.set('n', 'mfl', function()
 		vim.notify("No function selected!", vim.log.levels.WARN)
 	end
 end, { desc = "Run last selected directory picker" })
+
+vim.keymap.set({ "i", "c", "t" }, "<A-/>h", function()
+	if type(_G.select_terminal_history) == "function" then
+		_G.select_terminal_history()
+	else
+		vim.notify("No function selected!", vim.log.levels.WARN)
+	end
+end, { desc = "Run last selected directory picker" })
+
+vim.keymap.set({ "i", "c", "t" }, "<A-/>c", function()
+	if type(_G.select_terminal_commands) == "function" then
+		_G.select_terminal_commands()
+	else
+		vim.notify("No function selected!", vim.log.levels.WARN)
+	end
+end, { desc = "Run last selected directory picker" })
+
 
 for _, mapping in ipairs(mappings) do
 	-- Check if the function is globally available
