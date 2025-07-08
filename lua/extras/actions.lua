@@ -13,6 +13,14 @@ function M.open_dir(selected)
 		-- Change directory in Neovim
 		vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
 
+		_G.current_back_index = (_G.current_back_index or 0) + 1
+		if _G.directories_temp_back[#_G.directories_temp_back] ~= selected_path then
+			table.insert(_G.directories_temp_back, {path= selected_path, alias = _G.current_back_index})
+		end
+		-- table.insert(_G.directories_temp_back, {
+		-- 	path = selected_path,
+		-- 	index = _G.current_back_index,
+		-- })
 		-- Inform zoxide
 		vim.fn.system({ "zoxide", "add", selected_path })
 
@@ -22,19 +30,20 @@ function M.open_dir(selected)
 			history_utils.write_history(_G.directories_history)
 		end
 
-		print("Changed directory to: " .. selected_path)
+		-- print("Changed directory to: " .. selected_path)
 
 		-- Call the custom function
 		local success, err = pcall(_G.select_local_directories_max_1)
 		if not success then
 			print("Error running fzf_dirs_local: " .. err)
 		else
-			print("Successfully Changed Directories: " .. selected_path)
+			-- print("Successfully Changed Directories: " .. selected_path)
 		end
 	else
 		print("Directory does not exist: " .. selected_path)
 	end
 end
+
 function M.open_dir_tmux(selected)
 	local selected_path = utils.selected_path(selected)
 
@@ -224,12 +233,12 @@ function M.open_dir_tmux(selected)
 	else
 		-- If it's not a valid directory, just change the vim directory
 		vim.cmd("cd " .. selected_path)
-		print("Changed directory to: " .. selected_path)
+		-- print("Changed directory to: " .. selected_path)
 	end
 
 	if vim.g.neovide then
 		vim.cmd("cd " .. selected_path)
-		print("Changed directory to: " .. selected_path)
+		-- print("Changed directory to: " .. selected_path)
 	end
 end
 
@@ -250,12 +259,11 @@ function M.open_oil(selected)
 			history_utils.write_history(_G.directories_history)
 		end
 		vim.cmd("Oil " .. selected_path)
-		print("Changed directory to: " .. selected_path)
+		-- print("Changed directory to: " .. selected_path)
 	else
 		print("Directory does not exist: " .. selected_path)
 	end
 end
-
 
 function M.horizontal(selected)
 	local selected_path = utils.selected_path(selected)
@@ -279,4 +287,6 @@ function M.vertical(selected)
 	-- 'selected[1]' is the selected path from fzf-lua
 	vim.cmd("Oil " .. vim.fn.fnameescape(selected_path))
 end
+
+
 return M

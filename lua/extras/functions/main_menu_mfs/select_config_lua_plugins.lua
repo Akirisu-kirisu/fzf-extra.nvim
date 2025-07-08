@@ -21,7 +21,7 @@ _G.select_configuration_lua_plugins = function(opts)
 		["--preview-window"] = "right:60%:wrap",
 	}
 	opts.actions = {
-		["tab"] = {
+		["default"] = {
 			fn = function(selected)
 				-- Get the selected dependency name from the FZF result
 				local dep = selected[1]
@@ -78,7 +78,7 @@ _G.select_configuration_lua_plugins = function(opts)
 			end,
 			exec_silent = true,
 		},
-		["default"] = {
+		["tab"] = {
 			fn = function(selected)
 				if type(selected) == "table" then
 					selected = table.concat(selected, " ")

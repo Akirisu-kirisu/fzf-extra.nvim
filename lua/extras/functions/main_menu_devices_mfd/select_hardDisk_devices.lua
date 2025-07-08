@@ -34,7 +34,7 @@ _G.select_hardDisk_devices = function(opts)
 					-- vim.cmd("silent !cd " .. selected_path)
 					vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
 					-- vim.cmd("silent !alias cd='zoxide'")
-					print("Changed directory to: " .. selected_path)
+					-- print("Changed directory to: " .. selected_path)
 				else
 					vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
 				end
@@ -169,12 +169,12 @@ _G.select_hardDisk_devices = function(opts)
 			else
 				-- If it's not a valid directory, just change the vim directory
 				vim.cmd("cd " .. selected_path)
-				print("Changed directory to: " .. selected_path)
+				-- print("Changed directory to: " .. selected_path)
 			end
 
 			if vim.g.neovide then
 				vim.cmd("cd " .. selected_path)
-				print("Changed directory to: " .. selected_path)
+				-- print("Changed directory to: " .. selected_path)
 			end
 		end,
 		["ctrl-s"] = {

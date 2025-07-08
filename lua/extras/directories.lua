@@ -4,17 +4,15 @@ _G.directories = _G.directories or {}
 _G.directories_devices = {}
 _G.directories_all = _G.directories_all or {}
 _G.directories_history = _G.directories_history or {}
+_G.directories_temp_back = _G.directories_temp_back or {}
 
 _G.last_selected_fn_status = _G.last_selected_fn_status or {}
 _G.last_selected_fn = _G.last_selected_fn or nil
 
-local function path_exists(path)
-  return vim.fn.isdirectory(path) == 1
-end
 
 local function add_existing_dirs(dirs)
   for _, dir in ipairs(dirs) do
-    if path_exists(dir.path) then
+    if utils.path_exists(dir.path) then
       table.insert(_G.directories, dir)
     end
   end
@@ -65,7 +63,7 @@ local unix_dirs = {
   { path = "/etc", alias = "etc", sudo = true },
   { path = "/etc/sv", alias = "runit_sv", sudo = true },       -- for Void Linux runit services
   { path = "/var/service", alias = "runit_service", sudo = true }, -- symlinks to enable services
-  { path = "/usr/local/bin", alias = "local_bin", sudo = true },   -- for custom scripts
+  { path = "/usr/local/bin", alias = "bin", sudo = true },   -- for custom scripts
   { path = "/etc/doas.conf", alias = "doas", sudo = true },
   { path = "/boot/loader/entries", alias = "boot_entries", sudo = true }, -- systemd-boot configs
   { path = "/etc/hostname", alias = "hostname", sudo = true },

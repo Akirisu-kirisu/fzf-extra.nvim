@@ -43,12 +43,12 @@ function M.get_second_last_name(path)
 	end
 
 	-- Debug: Print the extracted parts of the path
-	print("Parts:", table.concat(parts, ", "))
+	-- print("Parts:", table.concat(parts, ", "))
 
 	-- Return the second-to-last part if it exists
 	if #parts >= 2 then
 		-- Debug: Print the second-to-last part
-		print("Second to last part:", parts[#parts - 1])
+		-- print("Second to last part:", parts[#parts - 1])
 		return parts[#parts - 1]:gsub("%.", "_")
 	else
 		return nil
@@ -191,4 +191,7 @@ function M.last_selected(name)
 	_G.last_selected_fn = fn_name
 end
 
+function M.path_exists(path)
+  return vim.fn.isdirectory(path) == 1
+end
 return M
