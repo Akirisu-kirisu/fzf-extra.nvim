@@ -408,13 +408,19 @@ _G.select_git_commits = function(opts)
 		"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
 	fzf_lua.fzf_exec(git_log_cmd, opts)
 end
-function M.previousDirectories()
 
+_G.previousDirectories = function(opts)
 	-- Format the list with aliases
 	local formatted = {}
+	local seen_paths = {}
+
 	for _, entry in ipairs(_G.directories_temp_back or {}) do
-		table.insert(formatted, string.format("[%d] %s", entry.alias, entry.path))
+		if not seen_paths[entry.path] then
+			table.insert(formatted, string.format("[%d] %s", entry.alias, entry.path))
+			seen_paths[entry.path] = true
+		end
 	end
+
 
 	-- Picker options
 	local opts = {
@@ -435,12 +441,11 @@ function M.previousDirectories()
 	}
 
 	fzf_lua.fzf_exec(formatted, opts)
-	print("DEBUGPRINT[94]: _G.directories_temp_back = " .. vim.inspect(_G.directories_temp_back))
 end
 
 
 vim.keymap.set({ "n" }, "mxw", function()
-	M.previousDirectories()
+	_G.previousDirectories()
 end, { desc = "Run last selected directory picker" })
 
 return M

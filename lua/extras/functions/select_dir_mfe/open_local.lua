@@ -49,7 +49,7 @@ _G.select_local_directories = function(opts)
 		end,
 		["alt-m"] = {
 			fn = function(selected)
-				_G.select_directory_global_mfe()
+				_G.previousDirectories()
 			end,
 		},
 		["alt-d"] = {
@@ -128,12 +128,18 @@ _G.select_local_directories_max_1 = function(opts)
 		["tab"] = function(selected)
 			extra_actions.open_dir_tmux(selected)
 		end,
+		-- ["alt-m"] = {
+		-- 	fn = function(selected)
+		-- 		_G.select_directory_global_mfe()
+		-- 	end,
+		-- 	exec_silent = true,
+		-- },
 		["alt-m"] = {
 			fn = function(selected)
-				_G.select_directory_global_mfe()
+				_G.previousDirectories()
 			end,
-			exec_silent = true,
 		},
+
 		["alt-d"] = {
 			fn = function(selected)
 				_G.select_local_directories()
