@@ -1,10 +1,168 @@
-local utils = require("extras.utils")
-local history_utils = require("extras.history-utils.history-utils")
+
+local H = require('ship_dir.handlers')
+
+local function S()
+	return require("ship_dir.directories")
+end
+
+local function utils()
+	return require("ship_dir.utils")
+end
 
 local M = {}
+--
+function M.get_user_home()
+	return os.getenv("HOME") or os.getenv("USERPROFILE") -- This will work for both Unix and Windows
+end
+--
+M.home = M.get_user_home() or "unknown"
 
+function M.get_last_name(path)
+	-- Ensure the path is not empty or nil
+	if not path or #path == 0 then
+		return nil
+	end
+
+	-- Remove trailing slashes using Lua's string.gsub (will replace multiple slashes if needed)
+	path = path:gsub("[\\/]+$", "")
+	-- Use Lua pattern matching to extract the last part of the path after the last '/'
+
+	-- Use Lua pattern matching to extract the last part of the path after the last '/'
+	local name = path:match("([^\\/]+)$")
+
+	-- Replace all dots in the name with underscores
+	if name then
+		return name:gsub("%.", "_")
+	else
+		return nil
+	end
+end
+
+function M.get_second_last_name(path)
+	-- Ensure the path is not empty or nil
+	if not path or #path == 0 then
+		return nil
+	end
+
+	-- Remove trailing slashes
+	path = path:gsub("/+$", "")
+
+	-- Extract all parts of the path into a table
+	local parts = {}
+	for part in path:gmatch("[^/]+") do
+		table.insert(parts, part)
+	end
+
+	-- Debug: Print the extracted parts of the path
+	-- print("Parts:", table.concat(parts, ", "))
+
+	-- Return the second-to-last part if it exists
+	if #parts >= 2 then
+		-- Debug: Print the second-to-last part
+		-- print("Second to last part:", parts[#parts - 1])
+		return parts[#parts - 1]:gsub("%.", "_")
+	else
+		return nil
+	end
+end
+
+function M.selected_path(selected)
+	local selected_path = selected[1]
+
+	if selected_path:match("⟨(.-)⟩") then
+		-- If path is inside parentheses, extract it
+		selected_path = selected_path:match("⟨(.-)⟩")
+	elseif selected_path:find(" ") then
+		-- If string starts with " ", remove it
+		selected_path = selected_path:gsub(" ", "")
+	end
+
+	-- local selected_path = selected[1]:match("%(([^)]+)%)") -- Capture the path inside parentheses
+	-- print("Selected_path: " .. vim.inspect(selected_path))
+
+	-- If no path is found inside parentheses, just use the selected string itself
+	if not selected_path then
+		selected_path = selected[1]
+	end
+	return selected_path
+end
+--
+function M.is_windows()
+	return package.config:sub(1, 1) == "\\"
+end
+--
+-- function M.mapcombo(cmd_name, lua_func_str, keybind, mode, opts)
+-- 	mode = mode or "n"
+-- 	opts = vim.tbl_extend("force", { noremap = true, silent = true }, opts or {})
+--
+-- 	-- Create command
+-- 	vim.cmd(string.format("command! -nargs=* %s lua %s", cmd_name, lua_func_str))
+--
+-- 	-- Create keybind
+-- 	local func_ref = load("return " .. lua_func_str)() -- Convert string to function
+-- 	vim.keymap.set(mode, keybind, func_ref, opts)
+--
+-- 	-- Ex:
+-- 	-- mapcombo("lua", "_G.loud_search", "msr", "n", { silent = false }) -- visible output
+-- end
+--
+function M.subdirs(directories)
+	local unique_directories = {}
+	local seen = {}
+
+	for _, dir in ipairs(directories) do
+		if dir.path and (not seen[dir.path] or dir.path:match("Current Dir")) and vim.fn.isdirectory(dir.path) == 1 then
+			seen[dir.path] = true
+			table.insert(unique_directories, dir)
+		end
+	end
+	directories = unique_directories
+
+	return directories
+end
+
+function M.get_current_dir(list)
+	local current_dir = vim.fn.getcwd()
+	local current_dir_name = vim.fn.fnamemodify(current_dir, ":t")
+
+	-- Remove current_dir if it already exists in the list
+	for i, entry in ipairs(list) do
+		if entry.path == current_dir then
+			table.remove(list, i)
+			break
+		end
+	end
+
+	-- Insert current_dir at the start of the list
+	table.insert(list, 1, { path = current_dir, alias = current_dir_name })
+
+	return list
+end
+--
+function M.last_selected(name)
+	local fn_name = name
+
+	-- Mark previous fn as false
+	if S().last_selected_fn and S().last_selected_fn ~= fn_name then
+		S().last_selected_fn_status[S().last_selected_fn] = false
+	end
+
+	-- Mark current fn as true
+	S().last_selected_fn_status[fn_name] = true
+	S().last_selected_fn = fn_name
+end
+--
+
+-- function M.path_exists(path)
+--   return vim.fn.isdirectory(path) == 1
+-- end
+-- -- ───────────────────────────────────────────────────────────────────
+-- -- ╭───────────────────────────────────────────────────────────────────╮
+-- -- │ Actions                                                           │
+-- -- ╰───────────────────────────────────────────────────────────────────╯
+--
 function M.open_dir(selected)
-	local selected_path = utils.selected_path(selected)
+	local selected_path = M.selected_path(selected)
 	if not selected_path then
 		return print("Could not determine the directory from the selected string.")
 	end
@@ -13,27 +171,25 @@ function M.open_dir(selected)
 		-- Change directory in Neovim
 		vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
 
-		_G.current_back_index = (_G.current_back_index or 0) + 1
-		if _G.directories_temp_back[#_G.directories_temp_back] ~= selected_path then
-			table.insert(_G.directories_temp_back, {path= selected_path, alias = _G.current_back_index})
+		local current_back_index
+		current_back_index = (current_back_index or 0) + 1
+		if S().directories_temp_back[#S().directories_temp_back] ~= selected_path then
+			table.insert(S().directories_temp_back, {path= selected_path, alias = current_back_index})
 		end
-		-- table.insert(_G.directories_temp_back, {
-		-- 	path = selected_path,
-		-- 	index = _G.current_back_index,
-		-- })
+
 		-- Inform zoxide
 		vim.fn.system({ "zoxide", "add", selected_path })
 
 		-- Update your custom history
-		_G.directories_history[selected_path] = true
-		if history_utils.write_history then
-			history_utils.write_history(_G.directories_history)
+		S().directories_history[selected_path] = true
+		if M.write_history then
+			M.write_history(S().directories_history)
 		end
 
-		-- print("Changed directory to: " .. selected_path)
+		print("Changed directory to: " .. selected_path)
 
 		-- Call the custom function
-		local success, err = pcall(_G.select_local_directories_max_1)
+		local success, err = pcall(H.DirLocal)
 		if not success then
 			print("Error running fzf_dirs_local: " .. err)
 		else
@@ -45,7 +201,7 @@ function M.open_dir(selected)
 end
 
 function M.open_dir_tmux(selected)
-	local selected_path = utils.selected_path(selected)
+	local selected_path = M.selected_path(selected)
 
 	local tmux_session_name
 
@@ -53,7 +209,7 @@ function M.open_dir_tmux(selected)
 	if selected_path == "/" then
 		tmux_session_name = "root"
 	else
-		tmux_session_name = utils.get_last_name(selected_path) -- Use directory name as tmux session name
+		tmux_session_name = M.get_last_name(selected_path) -- Use directory name as tmux session name
 	end
 
 	if selected_path and vim.fn.isdirectory(selected_path) == 1 then
@@ -125,8 +281,8 @@ function M.open_dir_tmux(selected)
 					local sub_choice = vim.fn.input("Create new session: [a]utomatic or [m]anual name? ")
 
 					if sub_choice == "a" then
-						local last_name = utils.get_last_name(selected_path)
-						local tmux_sesson_identifier = utils.get_second_last_name(selected_path)
+						local last_name = M.get_last_name(selected_path)
+						local tmux_sesson_identifier = M.get_second_last_name(selected_path)
 						local auto_name = tmux_sesson_identifier .. "/" .. last_name
 
 						vim.fn.system("tmux new-session -d -s " .. auto_name .. ' "cd ' .. selected_path .. '; bash"')
@@ -242,21 +398,23 @@ function M.open_dir_tmux(selected)
 	end
 end
 
+
 function M.captures_parentheses_copy(selected)
 	-- print('DEBUGPRINT[202]: actions.lua:156: selected=' .. vim.inspect(selected))
-	local selected_path = utils.selected_path(selected)
+	local selected_path = M.selected_path(selected)
 	local output = vim.fn.setreg("+", selected_path)
 	print("Path Copied" .. selected_path)
 	return output
 end
+--
 
 function M.open_oil(selected)
-	local selected_path = utils.selected_path(selected)
+	local selected_path = utils().selected_path(selected)
 
 	if vim.fn.isdirectory(selected_path) == 1 then
-		_G.directories_history[selected_path] = true
-		if history_utils.write_history then
-			history_utils.write_history(_G.directories_history)
+		S().directories_history[selected_path] = true
+		if M.write_history then
+			M.write_history(S().directories_history)
 		end
 		vim.cmd("Oil " .. selected_path)
 		-- print("Changed directory to: " .. selected_path)
@@ -266,7 +424,7 @@ function M.open_oil(selected)
 end
 
 function M.horizontal(selected)
-	local selected_path = utils.selected_path(selected)
+	local selected_path = utils().selected_path(selected)
 	-- Open a horizontal split
 	vim.cmd("split")
 
@@ -274,9 +432,9 @@ function M.horizontal(selected)
 	-- 'selected[1]' is the selected path from fzf-lua
 	vim.cmd("Oil " .. vim.fn.fnameescape(selected_path))
 end
-
+--
 function M.vertical(selected)
-	local selected_path = utils.selected_path(selected)
+	local selected_path = utils().selected_path(selected)
 	-- Open a horizontal split
 	local old_splitright = vim.o.splitright
 	vim.o.splitright = true
@@ -287,6 +445,61 @@ function M.vertical(selected)
 	-- 'selected[1]' is the selected path from fzf-lua
 	vim.cmd("Oil " .. vim.fn.fnameescape(selected_path))
 end
+--
+-- -- ╭───────────────────────────────────────────────────────────────────╮
+-- -- │ history utls                                                      │
+-- -- ╰───────────────────────────────────────────────────────────────────╯
+M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
 
+function M.read_history()
+  local dirs = {}
+  local seen = {}
+
+  local file = io.open(M.history_file, "r")
+  if file then
+    for line in file:lines() do
+      line = vim.fn.expand(line):gsub("/+$", "") -- Normalize
+      if vim.fn.isdirectory(line) == 1 and not seen[line] then
+        dirs[line] = true
+        seen[line] = true
+      end
+    end
+    file:close()
+  end
+
+  return dirs
+end
+
+
+function M.write_history(dirs)
+  local file = io.open(M.history_file, "w")
+  if file then
+    for dir, _ in pairs(dirs) do
+      file:write(dir .. "\n")
+    end
+    file:close()
+  else
+    print "⚠ Could not open history file for writing."
+  end
+end
+--
+function M.add_current_dir_to_history()
+  local cwd = vim.fn.getcwd()
+  if vim.fn.isdirectory(cwd) == 1 then
+    S().directories_history[cwd] = true
+  end
+end
+
+vim.api.nvim_create_autocmd({ "VimLeavePre", "DirChanged" }, {
+  callback = M.add_current_dir_to_history,
+})
+
+S().directories_history = M.read_history()
+-- 👇 Ensure any changes during session are written at exit
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  callback = function()
+    M.write_history(S().directories_history)
+  end,
+})
 
 return M

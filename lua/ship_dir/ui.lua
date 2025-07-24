@@ -1,11 +1,14 @@
-local utils = require("extras.utils")
+-- local utils = require("ship_dir.utils")
 
 local M = {}
 
+local function utils()
+  return require("ship_dir.utils")
+end
 -- Function to pad a string to a specific width and alignment
 
 function M.get_timestamp(dir_path)
-  if utils.is_windows() then
+  if utils().is_windows() then
     -- Handle Windows timestamp logic (empty for now)
     return ""
   else
