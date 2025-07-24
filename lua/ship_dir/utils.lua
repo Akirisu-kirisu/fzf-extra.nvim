@@ -162,6 +162,7 @@ end
 -- -- ╰───────────────────────────────────────────────────────────────────╯
 --
 function M.open_dir(selected)
+	local state = { current_back_index = 0 }
 	local selected_path = M.selected_path(selected)
 	if not selected_path then
 		return print("Could not determine the directory from the selected string.")
@@ -171,10 +172,9 @@ function M.open_dir(selected)
 		-- Change directory in Neovim
 		vim.cmd("cd " .. vim.fn.fnameescape(selected_path))
 
-		local current_back_index
-		current_back_index = (current_back_index or 0) + 1
+		state.current_back_index = (state.current_back_index or 0) + 1
 		if S().directories_temp_back[#S().directories_temp_back] ~= selected_path then
-			table.insert(S().directories_temp_back, {path= selected_path, alias = current_back_index})
+			table.insert(S().directories_temp_back, {path= selected_path, alias = state.current_back_index})
 		end
 
 		-- Inform zoxide
