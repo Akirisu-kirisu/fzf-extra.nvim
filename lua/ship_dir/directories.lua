@@ -50,6 +50,7 @@ local unix_dirs = {
   { path = M.home .. "/Videos", alias = "Videos" },
   { path = M.home .. "/Music", alias = "Music" },
   { path = M.home .. "/Pictures", alias = "Pictures" },
+  { path = M.home .. "/secrets", alias = "secrets" },
   { path = M.home .. "/.config", alias = ".config" },
   { path = M.home .. "/.local", alias = ".local" },
   { path = M.home .. "/.local/bin", alias = "bin" },

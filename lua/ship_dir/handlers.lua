@@ -394,11 +394,13 @@ M.GitCommits = function(opts)
 	opts = opts or {}
 
 	opts.prompt = "Commits> "
-	opts.fn_transform = function(x)
-		return fzf_lua.utils.ansi_codes.yellow(x)
-	end
+
+	-- opts.fn_transform = function(x)
+	-- 	return fzf_lua.utils.ansi_codes.yellow(x)
+	-- end
 
 	opts.preview = "git show --color=always {1}"
+
 	opts.winopts = {
 		preview = {
 			layout = "vertical", -- or "horizontal"
@@ -429,6 +431,7 @@ M.GitCommits = function(opts)
 
 	local git_log_cmd =
 		"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
+
 	fzf_lua.fzf_exec(git_log_cmd, opts)
 end
 
@@ -1674,10 +1677,10 @@ M.GitRepo = function(opts)
 	utils().last_selected(M.GitRepo)
 	opts = opts or {}
 	opts.prompt = "Git Repos> "
-	opts.fn_transform = function(repo)
-		-- Highlight repo names in yellow for example
-		return fzf_lua.utils.ansi_codes.yellow(repo)
-	end
+	-- opts.fn_transform = function(repo)
+	-- 	-- Highlight repo names in yellow for example
+	-- 	return fzf_lua.utils.ansi_codes.yellow(repo)
+	-- end
 
 	-- Helper function to get GitHub username
 	local function get_github_username()
