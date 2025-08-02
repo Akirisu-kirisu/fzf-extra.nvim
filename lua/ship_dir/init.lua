@@ -24,6 +24,7 @@ function M.setup()
 		"Commands",
 		"NvimPlugins",
 		"GitRepo",
+		"DirHistory",
 	}
 
 	for _, cmd in ipairs(commands) do

@@ -303,9 +303,9 @@ M.RecentDir = function()
 	-- Picker options
 	local opts = {
 		prompt = "Recent Directories> ",
-		fn_transform = function(x)
-			return fzf_lua.utils.ansi_codes.cyan(x) -- cyan = more readable
-		end,
+		-- fn_transform = function(x)
+		-- 	return fzf_lua.utils.ansi_codes.cyan(x) -- cyan = more readable
+		-- end,
 		actions = {
 			["default"] = function(selected)
 				local line = selected[1]
@@ -325,9 +325,9 @@ M.HiddenDir = function(opts)
 	utils().last_selected(M.HiddenDir)
 	opts = opts or {}
 	opts.prompt = "Hidden Directories> "
-	opts.fn_transform = function(x)
-		return fzf_lua.utils.ansi_codes.magenta(x)
-	end
+	-- opts.fn_transform = function(x)
+	-- 	return fzf_lua.utils.ansi_codes.magenta(x)
+	-- end
 	opts.actions = {
 		["default"] = function(selected)
 			vim.cmd("cd " .. selected[1])
@@ -359,9 +359,9 @@ M.HiddenFiles = function(opts)
 	utils().last_selected(M.HiddenFiles)
 	opts = opts or {}
 	opts.prompt = "Hidden Files> "
-	opts.fn_transform = function(x)
-		return require("fzf-lua.utils").ansi_codes.magenta(x)
-	end
+	-- opts.fn_transform = function(x)
+	-- 	return require("fzf-lua.utils").ansi_codes.magenta(x)
+	-- end
 
 	opts.actions = {
 		["default"] = function(selected)
@@ -1829,6 +1829,79 @@ M.GitRepo = function(opts)
 
 	-- Execute the command and feed the results into fzf
 	fzf_lua.fzf_exec(combined_command, opts)
+end
+
+M.DirHistory = function(opts)
+	utils().last_selected(M.DirHistory)
+	opts = opts or {}
+	opts.prompt = "History> "
+
+	-- Load stored history
+	local stored = utils().read_history()
+
+	-- Merge with session's history
+	for dir, _ in pairs(S().directories_history) do
+		stored[dir] = true
+	end
+
+	-- Save merged version
+	utils().write_history(stored)
+
+	-- Convert to list with uniqueness
+	local seen = {}
+	local dir_list = {}
+
+	for dir, _ in pairs(stored) do
+		if not seen[dir] then
+			seen[dir] = true
+			table.insert(dir_list, dir)
+		end
+	end
+
+	opts.actions = {
+		["ctrl-d"] = {
+			fn = function(selected)
+				if type(selected) == "table" then
+					selected = selected[1]
+				end
+				-- Remove from current session history
+				S().directories_history[selected] = nil
+
+				-- Also remove from file history
+				local stored_history = utils().read_history()
+				stored_history[selected] = nil
+				utils().write_history(stored_history)
+
+				print("Removed from history: " .. selected)
+			end,
+		},
+		["default"] = {
+			fn = function(selected)
+				if type(selected) == "table" then
+					selected = selected[1]
+				end
+				vim.cmd("cd " .. selected)
+				vim.cmd("Oil " .. selected)
+				print("Jumped to " .. selected)
+			end,
+		},
+		["tab"] = function(selected)
+			utils().open_dir_tmux(selected)
+		end,
+		["ctrl-y"] = {
+			fn = function(selected)
+				if type(selected) == "table" then
+					selected = selected[1]
+				end
+				-- Copy to system clipboard
+				vim.fn.setreg("+", selected)
+				print("Copied to clipboard: " .. selected)
+			end,
+			exec_silent = true,
+		},
+	}
+
+	require("fzf-lua").fzf_exec(dir_list, opts)
 end
 
 -- M.fzf_dirs = function(opts)
