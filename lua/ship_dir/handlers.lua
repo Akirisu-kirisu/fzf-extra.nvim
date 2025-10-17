@@ -1578,24 +1578,19 @@ M.CommandHistory = function(opts)
 		["default"] = function(selected)
 			local cmd = selected[1]
 			vim.fn.setreg("+", cmd)
-			print("Copied command: " .. cmd)
-			local task = require("overseer").new_task({
-				name = cmd,
-				cmd = cmd,
-				on_exit = function(exit_code, output)
-					if exit_code == 0 then
-						print("✅ pnpm remove succeeded")
-					else
-						print("❌ pnpm remove failed with exit code: " .. exit_code)
-						print("Output: " .. (output or "No output"))
-					end
-				end,
-			})
-			-- Start the task
-			task:start()
+			print("Pasted command: " .. cmd)
 
-			-- Optionally toggle Overseer UI
-			vim.cmd("OverseerToggle")
+			-- Insert at cursor (in normal mode)
+			vim.api.nvim_put({ cmd }, "c", true, true)
+
+			-- Optional: briefly highlight the inserted text
+			local ns_id = vim.api.nvim_create_namespace("bash_history_highlight")
+			local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+			local len = #cmd
+			vim.api.nvim_buf_add_highlight(0, ns_id, "Visual", row - 1, col, col + len)
+			vim.defer_fn(function()
+				vim.api.nvim_buf_clear_namespace(0, ns_id, 0, -1)
+			end, 300)
 		end,
 
 		-- ALT-S: run with overseer
