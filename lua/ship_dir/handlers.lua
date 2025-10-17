@@ -71,7 +71,6 @@ M.DirGlobal = function(opts)
 	fzf_lua.fzf_exec(fzf_lists, opts)
 end
 
-
 M.DirLocal = function(opts)
 	local fzf_lua = require("fzf-lua")
 	utils().last_selected(M.DirLocal)
@@ -299,7 +298,6 @@ M.RecentDir = function()
 		end
 	end
 
-
 	-- Picker options
 	local opts = {
 		prompt = "Recent Directories> ",
@@ -485,7 +483,7 @@ M.Packages = function(opts)
 
 	local scratch_pad = ""
 	opts.actions = {
-        ["alt-m"] = {
+		["alt-m"] = {
 			fn = function()
 				M.OptsMenu()
 			end,
@@ -1189,7 +1187,7 @@ M.Api = function(opts)
 	opts.prompt = "API> "
 
 	opts.actions = {
-        ["alt-m"] = {
+		["alt-m"] = {
 			fn = function()
 				M.OptsMenu()
 			end,
@@ -1466,7 +1464,7 @@ M.Commands = function(opts)
 			vim.fn.setreg("+", sel)
 			print("Command Copied: " .. sel)
 
-            -- Paste at cursor
+			-- Paste at cursor
 
 			-- local row, col = unpack(vim.api.nvim_win_get_cursor(0))
 			-- vim.api.nvim_put({ sel }, "c", true, true) -- after cursor
@@ -1551,6 +1549,93 @@ M.Commands = function(opts)
 	-- Use fzf-lua to pick from entries
 	fzf_lua.fzf_exec(entries, opts)
 end
+
+M.CommandHistory = function(opts)
+	local fzf_lua = require("fzf-lua")
+	opts = opts or {}
+	opts.prompt = opts.prompt or "Bash History> "
+
+	-- Path to your bash history
+	local home = os.getenv("HOME")
+	local file = home .. "/.bash_history"
+
+	-- Read bash history lines
+	local lines = {}
+	for line in io.lines(file) do
+		line = line:gsub("^%s*(.-)%s*$", "%1") -- trim
+		if line ~= "" then
+			table.insert(lines, line)
+		end
+	end
+
+	-- Reverse order (most recent first)
+	for i = 1, math.floor(#lines / 2) do
+		lines[i], lines[#lines - i + 1] = lines[#lines - i + 1], lines[i]
+	end
+
+	opts.actions = {
+		-- Default: copy to clipboard
+		["default"] = function(selected)
+			local cmd = selected[1]
+			vim.fn.setreg("+", cmd)
+			print("Copied command: " .. cmd)
+			local task = require("overseer").new_task({
+				name = cmd,
+				cmd = cmd,
+				on_exit = function(exit_code, output)
+					if exit_code == 0 then
+						print("✅ pnpm remove succeeded")
+					else
+						print("❌ pnpm remove failed with exit code: " .. exit_code)
+						print("Output: " .. (output or "No output"))
+					end
+				end,
+			})
+			-- Start the task
+			task:start()
+
+			-- Optionally toggle Overseer UI
+			vim.cmd("OverseerToggle")
+		end,
+
+		-- ALT-S: run with overseer
+		["alt-s"] = function(selected)
+			local cmd = selected[1]
+			local overseer = require("overseer")
+			local task = overseer.new_task({
+				name = cmd,
+				cmd = cmd,
+				on_exit = function(exit_code, output)
+					if exit_code == 0 then
+						print("✅ Task finished successfully!")
+					else
+						print("❌ Task failed (" .. exit_code .. "): " .. (output or "No output"))
+					end
+				end,
+			})
+			task:start()
+			vim.cmd("OverseerToggle")
+		end,
+
+		-- CTRL-O: run inside terminal split (interactive)
+		["ctrl-o"] = function(selected)
+			local cmd = selected[1]
+			local terminal_command = 'alacritty -e bash -c "' .. cmd .. '; exec bash"'
+			vim.cmd("term " .. terminal_command)
+		end,
+
+		-- CTRL-Y: copy only
+		["ctrl-y"] = function(selected)
+			local cmd = selected[1]
+			vim.fn.setreg("+", cmd)
+			print("Copied: " .. cmd)
+		end,
+	}
+
+	-- Run fzf-lua
+	fzf_lua.fzf_exec(lines, opts)
+end
+
 M.NvimPlugins = function(opts)
 	local fzf_lua = require("fzf-lua")
 	utils().last_selected(M.NvimPlugins)
@@ -1612,7 +1697,7 @@ M.NvimPlugins = function(opts)
 				end
 			end,
 		},
-        ["alt-m"] = {
+		["alt-m"] = {
 			fn = function()
 				M.OptsMenu()
 			end,
@@ -1738,7 +1823,7 @@ M.GitRepo = function(opts)
 	end
 
 	opts.actions = {
-        ["alt-m"] = {
+		["alt-m"] = {
 			fn = function()
 				M.OptsMenu()
 			end,

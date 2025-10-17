@@ -5,6 +5,7 @@ local M = {}
 function M.setup()
 
 	local commands = {
+		"CommandHistory",
 		"DirGlobal",
 		"DirLocal",
 		"DirDepth",
