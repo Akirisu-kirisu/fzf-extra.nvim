@@ -110,12 +110,13 @@ M.DirLocal = function(opts)
 		["tab"] = function(selected)
 			utils().open_dir_tmux(selected)
 		end,
-		-- ["alt-m"] = {
-		-- 	fn = function(selected)
-		-- 		_G.select_directory_global_mfe()
-		-- 	end,
-		-- 	exec_silent = true,
-		-- },
+		["alt-,"] = {
+			fn = function(selected)
+				local oil = require("oil")
+				oil.open(vim.fn.getcwd())
+			end,
+			exec_silent = false,
+		},
 		["alt-m"] = {
 			fn = function()
 				M.RecentDir()
@@ -197,6 +198,13 @@ M.DirDepth = function(opts)
 				vim.cmd("Oil ")
 			end,
 		},
+		["alt-,"] = {
+			fn = function(selected)
+				local oil = require("oil")
+				oil.open(vim.fn.getcwd())
+			end,
+			exec_silent = false,
+		},
 		["alt-s"] = {
 			fn = function()
 				M.HiddenDir()
@@ -223,7 +231,7 @@ M.DirDepth = function(opts)
 	}
 
 	local fzf_list = {}
-	local fd_command = "fd --type d --exclude node_modules --max-depth 4 ."
+	local fd_command = "fd --type d --exclude node_modules --max-depth 5 ."
 
 	-- Execute the 'fd' command and capture the output
 	local output = vim.fn.systemlist(fd_command)
