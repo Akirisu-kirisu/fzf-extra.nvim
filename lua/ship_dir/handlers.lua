@@ -416,7 +416,6 @@ M.HiddenDirDepth = function(opts)
 		end
 	end
 
-	print("DEBUG:", vim.inspect(hidden_dir))
 	fzf_lua.fzf_exec(hidden_dir, opts)
 end
 
