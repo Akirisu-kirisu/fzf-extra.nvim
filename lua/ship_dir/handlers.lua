@@ -358,7 +358,43 @@ M.HiddenDir = function(opts)
 	-- Modify the fd command to correctly search hidden directories and exclude .git
 	-- Also, ensure to include directories that are hidden (starting with a dot)
 	-- fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules '.*' ! -name '.' --absolute-path --max-depth 1 .", opts)
-	fzf_lua.fzf_exec("find . -maxdepth 1 -type d -name '.*' ! -name '.' -exec realpath {} \\;", opts)
+	local fd_command = "fd --type d --hidden --exclude node_modules --max-depth 1 ."
+	fzf_lua.fzf_exec(fd_command, opts)
+end
+
+M.HiddenDirDepth = function(opts)
+	local fzf_lua = require("fzf-lua")
+	utils().last_selected(M.HiddenDirDepth)
+	opts = opts or {}
+	opts.prompt = "Hidden Directories> "
+	-- opts.fn_transform = function(x)
+	-- 	return fzf_lua.utils.ansi_codes.magenta(x)
+	-- end
+	opts.actions = {
+		["default"] = function(selected)
+			vim.cmd("cd " .. selected[1])
+			-- print('DEBUGPRINT[70]: handlers.lua:203: selected=' .. vim.inspect(selected[1]))
+			vim.cmd("Oil " .. selected[1])
+		end,
+
+		["alt-s"] = function()
+			M.HiddenFiles()
+		end,
+
+		["alt-m"] = {
+			fn = function()
+				M.DirGlobal()
+			end,
+		},
+
+		["tab"] = function(selected)
+			utils().open_dir_tmux(selected)
+		end,
+	}
+	-- Modify the fd command to correctly search hidden directories and exclude .git
+	-- Also, ensure to include directories that are hidden (starting with a dot)
+	local fd_command = "fd --type d --hidden --exclude node_modules --max-depth 5 ."
+	fzf_lua.fzf_exec(fd_command, opts)
 end
 
 M.HiddenFiles = function(opts)
@@ -431,6 +467,17 @@ M.GitCommits = function(opts)
 			local commit_hash = selected[1]:match("^%w+")
 			if commit_hash then
 				vim.cmd("DiffviewOpen " .. commit_hash)
+			end
+		end,
+
+		["alt-y"] = function(selected)
+			local commit_hash = selected[1]:match("^%w+")
+			if commit_hash then
+				vim.fn.setreg("+", commit_hash) -- copy to system clipboard
+				vim.fn.setreg("*", commit_hash) -- optional: copy to primary selection
+				print("Copied commit hash: " .. commit_hash)
+			else
+				print("No commit hash found")
 			end
 		end,
 	}

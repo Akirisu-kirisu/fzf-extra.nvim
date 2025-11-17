@@ -11,6 +11,7 @@ function M.setup()
 		"DirDepth",
 		"OpenFiles",
 		"RecentDir",
+		"HiddenDirDepth",
 		"HiddenDir",
 		"HiddenFiles",
 		"GitCommits",
