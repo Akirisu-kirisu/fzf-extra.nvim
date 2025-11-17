@@ -358,8 +358,7 @@ M.HiddenDir = function(opts)
 	-- Modify the fd command to correctly search hidden directories and exclude .git
 	-- Also, ensure to include directories that are hidden (starting with a dot)
 	-- fzf_lua.fzf_exec("fd --type d --hidden --exclude node_modules '.*' ! -name '.' --absolute-path --max-depth 1 .", opts)
-	local fd_command = "fd --type d --hidden --exclude node_modules --max-depth 1 ."
-	fzf_lua.fzf_exec(fd_command, opts)
+	fzf_lua.fzf_exec("find . -maxdepth 1 -type d -name '.*' ! -name '.' -exec realpath {} \\;", opts)
 end
 
 M.HiddenDirDepth = function(opts)
@@ -393,8 +392,32 @@ M.HiddenDirDepth = function(opts)
 	}
 	-- Modify the fd command to correctly search hidden directories and exclude .git
 	-- Also, ensure to include directories that are hidden (starting with a dot)
-	local fd_command = "fd --type d --hidden --exclude node_modules --max-depth 5 ."
-	fzf_lua.fzf_exec(fd_command, opts)
+	-- fzf_lua.fzf_exec("find . -maxdepth 3 -type d -name '.*' ! -name '.' -exec realpath {} \\;", opts)
+	-- local fd_command = [[ fd -Ht d "" -d 4 ]]
+	local fd_command = [[ fd --type d --hidden --max-depth 5 -E node_modules -E .git -a]]
+	local hidden_dir = {}
+	local output = vim.fn.systemlist(fd_command)
+
+	for _, subdir in ipairs(output) do
+		if vim.fn.isdirectory(subdir) == 1 then
+			local is_hidden = false
+
+			-- loop through each path segment
+			for segment in subdir:gmatch("[^/]+") do
+				if segment:sub(1, 1) == "." then
+					is_hidden = true
+					break
+				end
+			end
+
+			if is_hidden then
+				table.insert(hidden_dir, subdir)
+			end
+		end
+	end
+
+	print("DEBUG:", vim.inspect(hidden_dir))
+	fzf_lua.fzf_exec(hidden_dir, opts)
 end
 
 M.HiddenFiles = function(opts)
