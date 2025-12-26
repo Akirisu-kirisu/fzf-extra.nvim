@@ -19,6 +19,17 @@ M.DirGlobal = function(opts)
 	local fzf_lua = require("fzf-lua")
 	opts = opts or {}
 	opts.prompt = "Global Directories> "
+	opts.preview = function(x)
+		local path = utils().selected_path(x)
+		return vim.fn.system("tree -C " .. vim.fn.shellescape(path) .. " | head -n 50")
+	end
+	opts.winopts = {
+		preview = {
+			layout = "vertical", -- or "horizontal"
+			vertical = "right:40%", -- 70% of width on the right
+			wrap = true,
+		},
+	}
 	opts.fn_transform = function(x)
 		return fzf_lua.utils.ansi_codes.magenta(x) -- Change to cyan for a beautiful color
 	end
@@ -231,7 +242,7 @@ M.DirDepth = function(opts)
 	}
 
 	local fzf_list = {}
-	local fd_command = "fd --type d --exclude node_modules --max-depth 5 ."
+	local fd_command = "fd --type d --exclude node_modules --max-depth 6 ."
 
 	-- Execute the 'fd' command and capture the output
 	local output = vim.fn.systemlist(fd_command)
@@ -1992,7 +2003,15 @@ M.DirHistory = function(opts)
 	utils().last_selected(M.DirHistory)
 	opts = opts or {}
 	opts.prompt = "History> "
+	opts.preview = "tree -C {} | head -n 50"
 
+	opts.winopts = {
+		preview = {
+			layout = "vertical", -- or "horizontal"
+			vertical = "right:40%", -- 70% of width on the right
+			wrap = true,
+		},
+	}
 	-- Load stored history
 	local stored = utils().read_history()
 
