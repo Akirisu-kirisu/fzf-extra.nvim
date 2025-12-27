@@ -1,4 +1,5 @@
-local H = require("ship_dir.handlers")
+
+local H = require('ship_dir.handlers')
 
 local function S()
 	return require("ship_dir.directories")
@@ -65,7 +66,6 @@ function M.get_second_last_name(path)
 	end
 end
 
-
 function M.selected_path(selected)
     -- nothing selected or empty table
     if not selected or (type(selected) == "table" and #selected == 0) then
@@ -74,7 +74,7 @@ function M.selected_path(selected)
 
     -- if selected is a string
     if type(selected) == "string" then
-        local path = selected
+        local path = selected[1]
         -- match ⟨…⟩ pattern
         local m = path:match("⟨(.-)⟩")
         if m then
@@ -107,6 +107,29 @@ function M.selected_path(selected)
     return nil
 end
 
+-- function M.selected_path(selected)
+-- 	if not selected or (type(selected) == "table" and #selected == 0) then
+--         return nil
+--     end
+
+-- 	local selected_path = selected[1]
+-- 	if selected_path:match("⟨(.-)⟩") then
+-- 		-- If path is inside parentheses, extract it
+-- 		selected_path = selected_path:match("⟨(.-)⟩")
+-- 	elseif selected_path:find(" ") then
+-- 		-- If string starts with " ", remove it
+-- 		selected_path = selected_path:gsub(" ", "")
+-- 	end
+
+-- 	-- local selected_path = selected[1]:match("%(([^)]+)%)") -- Capture the path inside parentheses
+-- 	-- print("Selected_path: " .. vim.inspect(selected_path))
+
+-- 	-- If no path is found inside parentheses, just use the selected string itself
+-- 	if not selected_path then
+-- 		selected_path = selected[1]
+-- 	end
+-- 	return selected_path
+-- end
 --
 function M.is_windows()
 	return package.config:sub(1, 1) == "\\"
@@ -195,7 +218,7 @@ function M.open_dir(selected)
 
 		state.current_back_index = (state.current_back_index or 0) + 1
 		if S().directories_temp_back[#S().directories_temp_back] ~= selected_path then
-			table.insert(S().directories_temp_back, { path = selected_path, alias = state.current_back_index })
+			table.insert(S().directories_temp_back, {path= selected_path, alias = state.current_back_index})
 		end
 
 		-- Inform zoxide
@@ -419,6 +442,7 @@ function M.open_dir_tmux(selected)
 	end
 end
 
+
 function M.captures_parentheses_copy(selected)
 	-- print('DEBUGPRINT[202]: actions.lua:156: selected=' .. vim.inspect(selected))
 	local selected_path = M.selected_path(selected)
@@ -431,19 +455,15 @@ end
 function M.open_oil(selected)
 	local selected_path = utils().selected_path(selected)
 
-	if not selected_path then
-		return
-	end
-
-	selected_path = vim.fs.normalize(selected_path)
-	selected_path = vim.fn.fnamemodify(selected_path, ":p")
-
 	if vim.fn.isdirectory(selected_path) == 1 then
 		S().directories_history[selected_path] = true
 		if M.write_history then
 			M.write_history(S().directories_history)
 		end
-		vim.cmd("Oil " .. vim.fn.fnameescape(selected_path))
+		vim.cmd("Oil " .. selected_path)
+		-- print("Changed directory to: " .. selected_path)
+	else
+		print("Directory does not exist: " .. selected_path)
 	end
 end
 
@@ -473,56 +493,57 @@ end
 -- -- ╭───────────────────────────────────────────────────────────────────╮
 -- -- │ history utls                                                      │
 -- -- ╰───────────────────────────────────────────────────────────────────╯
-M.history_file = vim.fn.stdpath("cache") .. "/dirs_history.txt"
+M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
 
 function M.read_history()
-	local dirs = {}
-	local seen = {}
+  local dirs = {}
+  local seen = {}
 
-	local file = io.open(M.history_file, "r")
-	if file then
-		for line in file:lines() do
-			line = vim.fn.expand(line):gsub("/+$", "") -- Normalize
-			if vim.fn.isdirectory(line) == 1 and not seen[line] then
-				dirs[line] = true
-				seen[line] = true
-			end
-		end
-		file:close()
-	end
+  local file = io.open(M.history_file, "r")
+  if file then
+    for line in file:lines() do
+      line = vim.fn.expand(line):gsub("/+$", "") -- Normalize
+      if vim.fn.isdirectory(line) == 1 and not seen[line] then
+        dirs[line] = true
+        seen[line] = true
+      end
+    end
+    file:close()
+  end
 
-	return dirs
+  return dirs
 end
 
+
 function M.write_history(dirs)
-	local file = io.open(M.history_file, "w")
-	if file then
-		for dir, _ in pairs(dirs) do
-			file:write(dir .. "\n")
-		end
-		file:close()
-	else
-		print("⚠ Could not open history file for writing.")
-	end
+  local file = io.open(M.history_file, "w")
+  if file then
+    for dir, _ in pairs(dirs) do
+      file:write(dir .. "\n")
+    end
+    file:close()
+  else
+    print "⚠ Could not open history file for writing."
+  end
 end
 --
 function M.add_current_dir_to_history()
-	local cwd = vim.fn.getcwd()
-	if vim.fn.isdirectory(cwd) == 1 then
-		S().directories_history[cwd] = true
-	end
+  local cwd = vim.fn.getcwd()
+  if vim.fn.isdirectory(cwd) == 1 then
+    S().directories_history[cwd] = true
+  end
 end
 
 vim.api.nvim_create_autocmd({ "VimLeavePre", "DirChanged" }, {
-	callback = M.add_current_dir_to_history,
+  callback = M.add_current_dir_to_history,
 })
 
 S().directories_history = M.read_history()
 -- 👇 Ensure any changes during session are written at exit
 vim.api.nvim_create_autocmd("VimLeavePre", {
-	callback = function()
-		M.write_history(S().directories_history)
-	end,
+  callback = function()
+    M.write_history(S().directories_history)
+  end,
 })
 
 return M
