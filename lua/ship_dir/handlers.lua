@@ -191,6 +191,7 @@ M.DirDepth = function(opts)
 		},
 		["default"] = {
 			fn = function(selected)
+				-- if nothing is selected, do nothing
 				utils().open_oil(selected)
 			end,
 		},
