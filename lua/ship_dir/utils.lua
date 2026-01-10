@@ -455,6 +455,10 @@ end
 function M.open_oil(selected)
 	local selected_path = utils().selected_path(selected)
 
+	if not selected_path then
+		return print("Could not determine the directory from the selected string.")
+	end
+
 	if vim.fn.isdirectory(selected_path) == 1 then
 		S().directories_history[selected_path] = true
 		if M.write_history then
