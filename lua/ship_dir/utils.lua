@@ -498,28 +498,32 @@ end
 -- -- ╭───────────────────────────────────────────────────────────────────╮
 -- -- │ history utls                                                      │
 -- -- ╰───────────────────────────────────────────────────────────────────╯
+
 function M.merge_zoxide_into_history()
   local history = S().directories_history or {}
   local zoxide = M.read_zoxide_scored()
+  -- print('DEBUGPRINT[232]: utils.lua:504: zoxide=' .. vim.inspect(zoxide))
 
   local seen = {}
   local merged = {}
 
   -- 1. Keep MRU order exactly
   for _, dir in ipairs(history) do
+    dir = M.normalize_selection(vim.fn.expand(dir):gsub("/+$", ""))
     merged[#merged + 1] = dir
     seen[dir] = true
   end
 
-  -- 2. Append missing zoxide dirs (score order optional)
+  -- 2. Append missing zoxide dirs
   local scored = {}
   for dir, score in pairs(zoxide) do
-    if not seen[dir] then
+    dir = M.normalize_selection(vim.fn.expand(dir):gsub("/+$", ""))
+
+    if not seen[dir] and vim.fn.isdirectory(dir) == 1 then
       table.insert(scored, { dir = dir, score = score })
     end
   end
 
-  -- Optional: sort by zoxide score (recommended)
   table.sort(scored, function(a, b)
     return a.score > b.score
   end)
@@ -531,6 +535,7 @@ function M.merge_zoxide_into_history()
 
   S().directories_history = merged
 end
+
 
 function M.prepend_current_dir(list)
   local cwd = utils().normalize_selection(vim.fn.getcwd())
@@ -616,17 +621,14 @@ function M.normalize_selection(sel)
   return sel:gsub("^.-(%f[/~])", "%1")
 end
 
+
 function M.read_zoxide_scored()
   local dirs = {}
+  local lines = vim.fn.systemlist("zoxide query -ls 2>/dev/null")
 
-  -- zoxide query -ls => "<score>\t<path>"
-  local handle = io.popen("zoxide query -ls 2>/dev/null")
-  if not handle then
-    return dirs
-  end
-
-  for line in handle:lines() do
-    local score, path = line:match("^(%S+)%s+(.+)$")
+  for _, line in ipairs(lines) do
+    -- print("DEBUG: zoxide line =", line)
+    local score, path = line:match("^%s*(%S+)%s+(.+)$")
     if score and path then
       path = vim.fn.expand(path):gsub("/+$", "")
       if vim.fn.isdirectory(path) == 1 then
@@ -635,12 +637,11 @@ function M.read_zoxide_scored()
     end
   end
 
-  handle:close()
   return dirs
 end
 
-M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
 
+M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
 
 
 function M.read_history()
@@ -690,6 +691,11 @@ vim.api.nvim_create_autocmd({ "VimLeavePre", "DirChanged" }, {
 })
 
 S().directories_history = M.read_history()
+
+-- 🔁 Merge zoxide dirs ONCE per startup (persistent)
+M.merge_zoxide_into_history()
+M.write_history(S().directories_history)
+
 -- 👇 Ensure any changes during session are written at exit
 vim.api.nvim_create_autocmd("VimLeavePre", {
   callback = function()

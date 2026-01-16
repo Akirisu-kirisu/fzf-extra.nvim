@@ -2033,11 +2033,6 @@ M.DirHistory = function(opts)
 	local dir_list = {}
 	local seen = {}
 
-	-- 1. Current cwd
-	local cwd = utils().normalize_selection(vim.fn.getcwd())
-	table.insert(dir_list, cwd)
-	seen[cwd] = true
-
 	-- 2. Permanent MRU (already ordered)
 	for _, dir in ipairs(history) do
 		if not seen[dir] then
@@ -2046,28 +2041,39 @@ M.DirHistory = function(opts)
 		end
 	end
 
-	-- 3. zoxide fallback
+	local scored = {}
 	for dir, score in pairs(zoxide) do
 		if not seen[dir] then
-			table.insert(dir_list, dir)
-			seen[dir] = true
+			table.insert(scored, { dir = dir, score = score })
 		end
+	end
+
+	table.sort(scored, function(a, b)
+		return a.score > b.score
+	end)
+
+	for _, item in ipairs(scored) do
+		table.insert(dir_list, item.dir)
+		seen[item.dir] = true
 	end
 
 	opts.actions = {
 		["ctrl-d"] = {
 			fn = function(selected)
-				if type(selected) == "table" then
-					selected = selected[1]
-				end
+				selected = utils().get_selected_string(selected)
 				selected = utils().normalize_selection(selected)
-				-- Remove from current session history
-				S().directories_history[selected] = nil
 
-				-- Also remove from file history
-				local stored_history = utils().read_history()
-				stored_history[selected] = nil
-				utils().write_history(stored_history)
+				local history = S().directories_history or {}
+				local new = {}
+
+				for _, dir in ipairs(history) do
+					if dir ~= selected then
+						table.insert(new, dir)
+					end
+				end
+
+				S().directories_history = new
+				utils().write_history(new)
 
 				print("Removed from history: " .. selected)
 			end,
@@ -2078,8 +2084,6 @@ M.DirHistory = function(opts)
 				if type(selected) == "table" then
 					selected = selected[1]
 				end
-				selected = utils().normalize_selection(selected)
-
 				if vim.fn.isdirectory(selected) ~= 1 then
 					vim.notify("Invalid directory: " .. selected, vim.log.levels.WARN)
 					return
@@ -2087,6 +2091,8 @@ M.DirHistory = function(opts)
 
 				-- utils().push_recent_dir(selected)
 
+        selected = utils().normalize_selection(selected)
+        vim.fn.system({ "zoxide", "add", selected })
 				vim.cmd("cd " .. selected)
 				vim.cmd("Oil " .. selected)
 				print("Jumped to " .. selected)
@@ -2097,6 +2103,7 @@ M.DirHistory = function(opts)
 			-- 	selected = selected[1]
 			-- end
 
+      vim.fn.system({ "zoxide", "add", selected })
 			utils().open_dir_tmux(selected)
 		end,
 		["ctrl-y"] = {
@@ -2104,7 +2111,6 @@ M.DirHistory = function(opts)
 				if type(selected) == "table" then
 					selected = selected[1]
 				end
-				selected = utils().normalize_selection(selected)
 				-- Copy to system clipboard
 				vim.fn.setreg("+", selected)
 				print("Copied to clipboard: " .. selected)
