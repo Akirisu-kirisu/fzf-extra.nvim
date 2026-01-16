@@ -2000,6 +2000,20 @@ M.GitRepo = function(opts)
 	fzf_lua.fzf_exec(combined_command, opts)
 end
 
+function M.tmux_selected_path(selected)
+	-- If already a string path, return it directly
+	if type(selected) == "string" then
+		return selected
+	end
+
+	-- Existing behavior
+	if type(selected) == "table" then
+		return selected.path or selected[1]
+	end
+
+	return nil
+end
+
 M.DirHistory = function(opts)
 	utils().last_selected(M.DirHistory)
 	opts = opts or {}
@@ -2013,26 +2027,70 @@ M.DirHistory = function(opts)
 			wrap = true,
 		},
 	}
-	-- Load stored history
+	-- Load histories
 	local stored = utils().read_history()
+	local session = S().directories_history
+	local zoxide = utils().read_zoxide_scored()
 
-	-- Merge with session's history
-	for dir, _ in pairs(S().directories_history) do
+	-- Merge all sources
+	for dir, _ in pairs(session) do
 		stored[dir] = true
 	end
 
-	-- Save merged version
+	for dir, _ in pairs(zoxide) do
+		stored[dir] = true
+	end
+
+	-- Persist merged history
 	utils().write_history(stored)
 
-	-- Convert to list with uniqueness
-	local seen = {}
 	local dir_list = {}
+	local seen = {}
+
+	-- 1. Current Neovim cwd
+	local cwd = vim.fn.getcwd()
+	cwd = utils().normalize_selection(vim.fn.expand(cwd):gsub("/+$", ""))
+
+	table.insert(dir_list, cwd)
+	seen[cwd] = true
+
+	-- 2 & 3. Previous opened dirs (MRU)
+
+	for i, dir in ipairs(S().recent_dirs or {}) do
+		if not seen[dir] then
+			table.insert(dir_list, dir)
+			seen[dir] = true
+		end
+	end
+
+	-- 4. Remaining dirs sorted by zoxide score
+	local scored = {}
+	local unscored = {}
 
 	for dir, _ in pairs(stored) do
 		if not seen[dir] then
+			if zoxide[dir] then
+				table.insert(scored, { dir = dir, score = zoxide[dir] })
+			else
+				table.insert(unscored, dir)
+			end
 			seen[dir] = true
-			table.insert(dir_list, dir)
 		end
+	end
+
+	-- Sort by score (desc)
+	table.sort(scored, function(a, b)
+		return a.score > b.score
+	end)
+
+	-- Insert scored first
+	for _, item in ipairs(scored) do
+		table.insert(dir_list, item.dir)
+	end
+
+	-- Then fallback dirs
+	for _, dir in ipairs(unscored) do
+		table.insert(dir_list, dir)
 	end
 
 	opts.actions = {
@@ -2041,6 +2099,7 @@ M.DirHistory = function(opts)
 				if type(selected) == "table" then
 					selected = selected[1]
 				end
+				selected = utils().normalize_selection(selected)
 				-- Remove from current session history
 				S().directories_history[selected] = nil
 
@@ -2057,12 +2116,25 @@ M.DirHistory = function(opts)
 				if type(selected) == "table" then
 					selected = selected[1]
 				end
+				selected = utils().normalize_selection(selected)
+
+				if vim.fn.isdirectory(selected) ~= 1 then
+					vim.notify("Invalid directory: " .. selected, vim.log.levels.WARN)
+					return
+				end
+
+				utils().push_recent_dir(selected)
+
 				vim.cmd("cd " .. selected)
 				vim.cmd("Oil " .. selected)
 				print("Jumped to " .. selected)
 			end,
 		},
 		["tab"] = function(selected)
+			-- if type(selected) == "table" then
+			-- 	selected = selected[1]
+			-- end
+
 			utils().open_dir_tmux(selected)
 		end,
 		["ctrl-y"] = {
@@ -2070,6 +2142,7 @@ M.DirHistory = function(opts)
 				if type(selected) == "table" then
 					selected = selected[1]
 				end
+				selected = utils().normalize_selection(selected)
 				-- Copy to system clipboard
 				vim.fn.setreg("+", selected)
 				print("Copied to clipboard: " .. selected)

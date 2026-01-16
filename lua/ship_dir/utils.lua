@@ -246,6 +246,7 @@ end
 
 function M.open_dir_tmux(selected)
 	local selected_path = M.selected_path(selected)
+  print('DEBUGPRINT[229]: utils.lua:248: selected_path=' .. vim.inspect(selected_path))
 
 	local tmux_session_name
 
@@ -497,6 +498,73 @@ end
 -- -- ╭───────────────────────────────────────────────────────────────────╮
 -- -- │ history utls                                                      │
 -- -- ╰───────────────────────────────────────────────────────────────────╯
+function M.push_recent_dir(dir)
+  local recent = S().recent_dirs or {}
+  local new = { dir }
+
+  -- Remove duplicates
+  for _, d in ipairs(recent) do
+    if d ~= dir then
+      table.insert(new, d)
+    end
+  end
+
+  -- Keep only last 2
+  while #new > 2 do
+    table.remove(new)
+  end
+
+  S().recent_dirs = new
+end
+
+-- function M.normalize_selection(sel)
+--   -- Remove any leading non-path junk (icons, markers, spaces)
+--   return sel:gsub("^%s*[^/%w~.-]+%s*", "")
+-- end
+function M.get_selected_string(selected)
+  if type(selected) == "string" then
+    return selected
+  end
+
+  if type(selected) == "table" then
+    return selected[1]
+  end
+
+  return nil
+end
+
+function M.normalize_selection(sel)
+  if type(sel) ~= "string" then
+    return nil
+  end
+
+  -- Remove anything before the path (/ or ~)
+  return sel:gsub("^.-(%f[/~])", "%1")
+end
+
+function M.read_zoxide_scored()
+  local dirs = {}
+
+  -- zoxide query -ls => "<score>\t<path>"
+  local handle = io.popen("zoxide query -ls 2>/dev/null")
+  if not handle then
+    return dirs
+  end
+
+  for line in handle:lines() do
+    local score, path = line:match("^(%S+)%s+(.+)$")
+    if score and path then
+      path = vim.fn.expand(path):gsub("/+$", "")
+      if vim.fn.isdirectory(path) == 1 then
+        dirs[path] = tonumber(score) or 0
+      end
+    end
+  end
+
+  handle:close()
+  return dirs
+end
+
 M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
 
 function M.read_history()
