@@ -498,6 +498,80 @@ end
 -- -- ╭───────────────────────────────────────────────────────────────────╮
 -- -- │ history utls                                                      │
 -- -- ╰───────────────────────────────────────────────────────────────────╯
+function M.merge_zoxide_into_history()
+  local history = S().directories_history or {}
+  local zoxide = M.read_zoxide_scored()
+
+  local seen = {}
+  local merged = {}
+
+  -- 1. Keep MRU order exactly
+  for _, dir in ipairs(history) do
+    merged[#merged + 1] = dir
+    seen[dir] = true
+  end
+
+  -- 2. Append missing zoxide dirs (score order optional)
+  local scored = {}
+  for dir, score in pairs(zoxide) do
+    if not seen[dir] then
+      table.insert(scored, { dir = dir, score = score })
+    end
+  end
+
+  -- Optional: sort by zoxide score (recommended)
+  table.sort(scored, function(a, b)
+    return a.score > b.score
+  end)
+
+  for _, item in ipairs(scored) do
+    table.insert(merged, item.dir)
+    seen[item.dir] = true
+  end
+
+  S().directories_history = merged
+end
+
+function M.prepend_current_dir(list)
+  local cwd = utils().normalize_selection(vim.fn.getcwd())
+
+  -- Remove if already present
+  for i, dir in ipairs(list) do
+    if dir == cwd then
+      table.remove(list, i)
+      break
+    end
+  end
+
+  table.insert(list, 1, cwd)
+  return list
+end
+
+function M.push_history_dir(dir)
+  dir = utils().normalize_selection(dir)
+  if not dir or vim.fn.isdirectory(dir) ~= 1 then
+    return
+  end
+
+  local history = S().directories_history or {}
+  local new = { dir }
+
+  -- Remove duplicates
+  for _, d in ipairs(history) do
+    if d ~= dir then
+      table.insert(new, d)
+    end
+  end
+
+  -- Cap size
+  local MAX = 50
+  while #new > MAX do
+    table.remove(new)
+  end
+
+  S().directories_history = new
+end
+
 function M.push_recent_dir(dir)
   local recent = S().recent_dirs or {}
   local new = { dir }
@@ -510,7 +584,7 @@ function M.push_recent_dir(dir)
   end
 
   -- Keep only last 2
-  while #new > 2 do
+  while #new > 10 do
     table.remove(new)
   end
 
@@ -567,6 +641,8 @@ end
 
 M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
 
+
+
 function M.read_history()
   local dirs = {}
   local seen = {}
@@ -574,10 +650,10 @@ function M.read_history()
   local file = io.open(M.history_file, "r")
   if file then
     for line in file:lines() do
-      line = vim.fn.expand(line):gsub("/+$", "") -- Normalize
-      if vim.fn.isdirectory(line) == 1 and not seen[line] then
-        dirs[line] = true
-        seen[line] = true
+      local dir = vim.fn.expand(line):gsub("/+$", "")
+      if vim.fn.isdirectory(dir) == 1 and not seen[dir] then
+        table.insert(dirs, dir)
+        seen[dir] = true
       end
     end
     file:close()
@@ -586,24 +662,27 @@ function M.read_history()
   return dirs
 end
 
-
 function M.write_history(dirs)
   local file = io.open(M.history_file, "w")
-  if file then
-    for dir, _ in pairs(dirs) do
-      file:write(dir .. "\n")
-    end
-    file:close()
-  else
-    print "⚠ Could not open history file for writing."
+  if not file then
+    print("⚠ Could not open history file for writing.")
+    return
   end
+
+  for _, dir in ipairs(dirs) do
+    file:write(dir .. "\n")
+  end
+
+  file:close()
 end
+
 --
 function M.add_current_dir_to_history()
-  local cwd = vim.fn.getcwd()
-  if vim.fn.isdirectory(cwd) == 1 then
-    S().directories_history[cwd] = true
-  end
+  -- local cwd = vim.fn.getcwd()
+  -- if vim.fn.isdirectory(cwd) == 1 then
+  --   S().directories_history[cwd] = true
+  -- end
+  M.push_history_dir(vim.fn.getcwd())
 end
 
 vim.api.nvim_create_autocmd({ "VimLeavePre", "DirChanged" }, {

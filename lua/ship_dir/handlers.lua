@@ -2028,69 +2028,30 @@ M.DirHistory = function(opts)
 		},
 	}
 	-- Load histories
-	local stored = utils().read_history()
-	local session = S().directories_history
 	local zoxide = utils().read_zoxide_scored()
-
-	-- Merge all sources
-	for dir, _ in pairs(session) do
-		stored[dir] = true
-	end
-
-	for dir, _ in pairs(zoxide) do
-		stored[dir] = true
-	end
-
-	-- Persist merged history
-	utils().write_history(stored)
-
+	local history = S().directories_history or {}
 	local dir_list = {}
 	local seen = {}
 
-	-- 1. Current Neovim cwd
-	local cwd = vim.fn.getcwd()
-	cwd = utils().normalize_selection(vim.fn.expand(cwd):gsub("/+$", ""))
-
+	-- 1. Current cwd
+	local cwd = utils().normalize_selection(vim.fn.getcwd())
 	table.insert(dir_list, cwd)
 	seen[cwd] = true
 
-	-- 2 & 3. Previous opened dirs (MRU)
-
-	for i, dir in ipairs(S().recent_dirs or {}) do
+	-- 2. Permanent MRU (already ordered)
+	for _, dir in ipairs(history) do
 		if not seen[dir] then
 			table.insert(dir_list, dir)
 			seen[dir] = true
 		end
 	end
 
-	-- 4. Remaining dirs sorted by zoxide score
-	local scored = {}
-	local unscored = {}
-
-	for dir, _ in pairs(stored) do
+	-- 3. zoxide fallback
+	for dir, score in pairs(zoxide) do
 		if not seen[dir] then
-			if zoxide[dir] then
-				table.insert(scored, { dir = dir, score = zoxide[dir] })
-			else
-				table.insert(unscored, dir)
-			end
+			table.insert(dir_list, dir)
 			seen[dir] = true
 		end
-	end
-
-	-- Sort by score (desc)
-	table.sort(scored, function(a, b)
-		return a.score > b.score
-	end)
-
-	-- Insert scored first
-	for _, item in ipairs(scored) do
-		table.insert(dir_list, item.dir)
-	end
-
-	-- Then fallback dirs
-	for _, dir in ipairs(unscored) do
-		table.insert(dir_list, dir)
 	end
 
 	opts.actions = {
@@ -2111,6 +2072,7 @@ M.DirHistory = function(opts)
 				print("Removed from history: " .. selected)
 			end,
 		},
+
 		["default"] = {
 			fn = function(selected)
 				if type(selected) == "table" then
@@ -2123,7 +2085,7 @@ M.DirHistory = function(opts)
 					return
 				end
 
-				utils().push_recent_dir(selected)
+				-- utils().push_recent_dir(selected)
 
 				vim.cmd("cd " .. selected)
 				vim.cmd("Oil " .. selected)
