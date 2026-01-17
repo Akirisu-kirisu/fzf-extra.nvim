@@ -148,7 +148,7 @@ M.DirLocal = function(opts)
 	}
 
 	local fzf_list = {}
-	local fd_command = "fd --type d --exclude node_modules --max-depth 1 ."
+	local fd_command = "fd --type d --exclude node_modules --absolute-path --max-depth 1 ."
 
 	-- Execute the 'fd' command and capture the output
 	local output = vim.fn.systemlist(fd_command)
