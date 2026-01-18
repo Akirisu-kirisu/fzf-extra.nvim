@@ -1334,6 +1334,18 @@ M.Links = function(opts)
 			end,
 			exec_silent = true,
 		},
+		["ctrl-y"] = {
+			fn = function(selected)
+				-- if type(selected) == "table" then
+				-- 	selected = selected[1]
+				-- end
+				-- Copy to system clipboard
+       local selected_url = utils().selected_path(selected) 
+				vim.fn.setreg("+", selected_url)
+				print("Copied to clipboard: " .. selected_url)
+			end,
+			exec_silent = true,
+		},
 		["default"] = {
 			fn = function(selected)
 				local selected_url = utils().selected_path(selected)
@@ -1446,6 +1458,10 @@ M.Links = function(opts)
 		{
 			alias = "https://github.com/NvChad/base46/blob/v3.0/lua/base46/themes/ashes.lua",
 			path = "base46",
+		},
+		{
+			alias = "https://onehack.st/t/public-apis-a-collective-list-of-free-apis-for-use-in-software-and-web-development/217098",
+			path = "api",
 		},
 	}
 
