@@ -569,6 +569,16 @@ M.Packages = function(opts)
 	utils().last_selected(M.Packages)
 	opts = opts or {}
 	opts.prompt = "Packages> " -- typo fixed: promt -> prompt
+	opts.fzf_opts = {
+		["--multi"] = "",
+		["--bind"] = "tab:toggle",
+		["--marker"] = "✓ ",
+    ["--preview"] = [[
+    echo "Selected packages:"
+    echo
+    printf '%s\n' {+}
+  ]],
+	}
 
 	local scratch_pad = ""
 	opts.actions = {
@@ -603,28 +613,33 @@ M.Packages = function(opts)
 				end
 			end,
 		},
-		["tab"] = {
-			fn = function(selected)
-				local dep = selected[1]
-				-- Remove the version number, ^, and colon
-				dep = dep:match("([%a%-]+)") -- This will match the dependency name before any version info
-				if scratch_pad == "" then
-					scratch_pad = dep
-				else
-					scratch_pad = scratch_pad .. " " .. dep
-				end
-				print("Current dependencies: " .. scratch_pad)
-			end,
-			exec_silent = true,
-		},
-		["ctrl-y"] = {
-			fn = function(selected)
-				local text = table.concat(selected, "\n") -- if it's a list of lines/items
-				vim.fn.setreg("+", text)
-				print("Dependency Copied:\n" .. text)
-			end,
-			exec_silent = true,
-		},
+    ["ctrl-y"] = {
+      fn = function(selected)
+        if #selected == 0 then
+          return
+        end
+
+        local pkgs = {}
+
+        for _, item in ipairs(selected) do
+          -- match: name: version
+          local name, version = item:match("^%s*([^:]+):%s*(.+)$")
+          if name and version then
+            table.insert(pkgs, string.format("%s@%s", name, version))
+          else
+            -- fallback: raw item
+            table.insert(pkgs, item)
+          end
+        end
+
+        -- choose your installer here
+        local cmd = "bun add -D " .. table.concat(pkgs, " ")
+
+        vim.notify(cmd)
+        vim.fn.setreg("+", cmd)
+      end,
+      exec_silent = true,
+    },
 		["ctrl-d"] = {
 			fn = function(selected)
 				if not selected or (type(selected) == "table" and #selected == 0) then
@@ -651,7 +666,7 @@ M.Packages = function(opts)
 				end
 
 				-- Construct the pnpm command
-				local cmd = { "pnpm", "remove", unpack(packages) }
+				local cmd = { "bun", "remove", unpack(packages) }
 
 				-- Create the Overseer task
 				local task = require("overseer").new_task({
@@ -707,10 +722,22 @@ M.Packages = function(opts)
 		table.insert(all_deps, k .. ": " .. v)
 	end
 
-	opts.fzf_opts = {
-		["--preview"] = string.format("rg --context 5 --heading --line-number --color=always {} %s", package_json_path),
-		["--preview-window"] = "right:60%:wrap",
-	}
+	-- opts.preview = function(x, opts)
+	-- 	local selected = opts.__fzf_selected or {}
+ --    print('DEBUGPRINT[290]: handlers.lua:731: selected=' .. vim.inspect(selected))
+
+	-- 	if #selected == 0 then
+	-- 		return "No packages selected (use <Tab> to mark)"
+	-- 	end
+
+	-- 	local out = {}
+	-- 	for _, item in ipairs(selected) do
+	-- 		local dep = item:match("([%a%-]+)") or item
+	-- 		table.insert(out, dep)
+	-- 	end
+
+	-- 	return table.concat(out, "\n")
+	-- end
 	fzf_lua.fzf_exec(all_deps, opts)
 end
 
@@ -1340,7 +1367,7 @@ M.Links = function(opts)
 				-- 	selected = selected[1]
 				-- end
 				-- Copy to system clipboard
-       local selected_url = utils().selected_path(selected) 
+				local selected_url = utils().selected_path(selected)
 				vim.fn.setreg("+", selected_url)
 				print("Copied to clipboard: " .. selected_url)
 			end,
@@ -2107,8 +2134,8 @@ M.DirHistory = function(opts)
 
 				-- utils().push_recent_dir(selected)
 
-        selected = utils().normalize_selection(selected)
-        vim.fn.system({ "zoxide", "add", selected })
+				selected = utils().normalize_selection(selected)
+				vim.fn.system({ "zoxide", "add", selected })
 				vim.cmd("cd " .. selected)
 				vim.cmd("Oil " .. selected)
 				print("Jumped to " .. selected)
@@ -2119,7 +2146,7 @@ M.DirHistory = function(opts)
 			-- 	selected = selected[1]
 			-- end
 
-      vim.fn.system({ "zoxide", "add", selected })
+			vim.fn.system({ "zoxide", "add", selected })
 			utils().open_dir_tmux(selected)
 		end,
 		["ctrl-y"] = {
