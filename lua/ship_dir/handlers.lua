@@ -1492,15 +1492,16 @@ M.Links = function(opts)
 		},
 	}
 
-	ui().calculate_padding(links)
+	-- ui().calculate_padding(links)
 	-- Prepare entries for FZF with proper alignment
 	local fzf_entries = {}
 	for _, link in ipairs(links) do
-		local padded_name = string.format("%-" .. ui().max_alias_len .. "s", link.alias)
-		local padded_desc = string.format("%-" .. ui().max_path_len .. "s", link.path)
-		local url = string.format("%-" .. #link.alias + 2 .. "s", "⟨" .. link.alias .. "⟩") -- +2 for the parentheses
+		-- local padded_name = string.format("%-" .. ui().max_alias_len .. "s", link.alias)
+		-- local padded_desc = string.format("%-" .. ui().max_path_len .. "s", link.path)
+		local url = string.format("⟨" .. link.alias .. "⟩") -- +2 for the parentheses
 
-		table.insert(fzf_entries, string.format("%s │ %s │ %s", padded_name, padded_desc, url))
+		-- table.insert(fzf_entries, string.format("%s │ %s │ %s", padded_name, padded_desc, url))
+		table.insert(fzf_entries, string.format("%s ",  url))
 	end
 	-- Execute fzf with the predefined popular links
 	fzf_lua.fzf_exec(fzf_entries, opts)
