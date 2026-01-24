@@ -573,7 +573,7 @@ M.Packages = function(opts)
 		["--multi"] = "",
 		["--bind"] = "tab:toggle",
 		["--marker"] = "✓ ",
-    ["--preview"] = [[
+		["--preview"] = [[
     echo "Selected packages:"
     echo
     printf '%s\n' {+}
@@ -613,33 +613,33 @@ M.Packages = function(opts)
 				end
 			end,
 		},
-    ["ctrl-y"] = {
-      fn = function(selected)
-        if #selected == 0 then
-          return
-        end
+		["ctrl-y"] = {
+			fn = function(selected)
+				if #selected == 0 then
+					return
+				end
 
-        local pkgs = {}
+				local pkgs = {}
 
-        for _, item in ipairs(selected) do
-          -- match: name: version
-          local name, version = item:match("^%s*([^:]+):%s*(.+)$")
-          if name and version then
-            table.insert(pkgs, string.format("%s@%s", name, version))
-          else
-            -- fallback: raw item
-            table.insert(pkgs, item)
-          end
-        end
+				for _, item in ipairs(selected) do
+					-- match: name: version
+					local name, version = item:match("^%s*([^:]+):%s*(.+)$")
+					if name and version then
+						table.insert(pkgs, string.format("%s@%s", name, version))
+					else
+						-- fallback: raw item
+						table.insert(pkgs, item)
+					end
+				end
 
-        -- choose your installer here
-        local cmd = "bun add -D " .. table.concat(pkgs, " ")
+				-- choose your installer here
+				local cmd = "bun add -D " .. table.concat(pkgs, " ")
 
-        vim.notify(cmd)
-        vim.fn.setreg("+", cmd)
-      end,
-      exec_silent = true,
-    },
+				vim.notify(cmd)
+				vim.fn.setreg("+", cmd)
+			end,
+			exec_silent = true,
+		},
 		["ctrl-d"] = {
 			fn = function(selected)
 				if not selected or (type(selected) == "table" and #selected == 0) then
@@ -724,7 +724,7 @@ M.Packages = function(opts)
 
 	-- opts.preview = function(x, opts)
 	-- 	local selected = opts.__fzf_selected or {}
- --    print('DEBUGPRINT[290]: handlers.lua:731: selected=' .. vim.inspect(selected))
+	--    print('DEBUGPRINT[290]: handlers.lua:731: selected=' .. vim.inspect(selected))
 
 	-- 	if #selected == 0 then
 	-- 		return "No packages selected (use <Tab> to mark)"
@@ -1501,7 +1501,7 @@ M.Links = function(opts)
 		local url = string.format("⟨" .. link.alias .. "⟩") -- +2 for the parentheses
 
 		-- table.insert(fzf_entries, string.format("%s │ %s │ %s", padded_name, padded_desc, url))
-		table.insert(fzf_entries, string.format("%s ",  url))
+		table.insert(fzf_entries, string.format("%s ", url))
 	end
 	-- Execute fzf with the predefined popular links
 	fzf_lua.fzf_exec(fzf_entries, opts)
@@ -2181,5 +2181,109 @@ end
 -- 	print("fzf dirs error")
 -- 	fzf_lua.fzf_exec("fd --type d", opts)
 -- end
+
+M.ShadcnSearch = function()
+	local fzf_lua = require("fzf-lua")
+	local opts = {
+		prompt = "Select Devices> ",
+		fzf_opts = {
+			["--multi"] = "",
+			["--bind"] = "tab:toggle",
+			["--marker"] = "✓ ",
+			["--preview"] = [[
+		echo "Selected packages:"
+		echo
+		printf '%s\n' {+}
+	]],
+		},
+		actions = {
+			["default"] = function(selected)
+				if not selected or vim.tbl_isempty(selected) then
+					return
+				end
+
+				local components = table.concat(selected, " ")
+				local overseer = require("overseer")
+
+				local function run_add_components()
+					local task = overseer.new_task({
+						name = "Shadcn: Add components",
+						cmd = string.format(
+							"bun x shadcn-svelte@latest add %s",
+							components
+						),
+						on_exit = function(code)
+							if code == 0 then
+								vim.notify("✅ Shadcn components added")
+							else
+								vim.notify("❌ Failed to add components", vim.log.levels.ERROR)
+							end
+						end,
+					})
+
+					task:start()
+					vim.cmd("OverseerToggle")
+				end
+
+				-- If already initialized, just add components
+				if vim.fn.filereadable("components.json") == 1 then
+					run_add_components()
+					return
+				end
+
+				-- Ask user
+				local ok = vim.fn.confirm(
+					"Shadcn is not initialized.\nInitialize shadcn + Tailwind?",
+					"&Yes\n&No",
+					1
+				)
+
+				if ok ~= 1 then
+					vim.notify("Skipping shadcn init")
+					return
+				end
+
+				-- Step 1: shadcn init
+				local init_task = overseer.new_task({
+					name = "Shadcn: Init",
+					cmd = "bunx --bun shadcn@latest init",
+					on_exit = function(code)
+						if code ~= 0 then
+							vim.notify("❌ Shadcn init failed", vim.log.levels.ERROR)
+							return
+						end
+
+						-- Step 2: Tailwind
+						local tw_task = overseer.new_task({
+							name = "Svelte: Add Tailwind",
+							cmd = "bun x sv add tailwindcss",
+							on_exit = function(code2)
+								if code2 ~= 0 then
+									vim.notify("❌ Tailwind install failed", vim.log.levels.ERROR)
+									return
+								end
+
+								-- Step 3: Add components
+								run_add_components()
+							end,
+						})
+
+						tw_task:start()
+					end,
+				})
+
+				init_task:start()
+				vim.cmd("OverseerToggle")
+			end,
+		},
+	}
+
+	-- Define the choices for the fzf menu
+	local choices = S().shadcn_components
+	-- local choices = { "Hard Disk", "Removable Storage" }
+
+	-- Open fzf for selecting between "Links" or "Git Repos"
+	fzf_lua.fzf_exec(choices, opts)
+end
 
 return M

@@ -27,6 +27,7 @@ function M.setup()
 		"NvimPlugins",
 		"GitRepo",
 		"DirHistory",
+		"ShadcnSearch",
 	}
 
 	for _, cmd in ipairs(commands) do
