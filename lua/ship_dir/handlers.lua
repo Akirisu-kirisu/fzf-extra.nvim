@@ -500,7 +500,7 @@ M.GitCommits = function(opts)
 		["tab"] = function(selected)
 			local commit_hash = selected[1]:match("^%w+")
 			if commit_hash then
-				vim.cmd("DiffviewOpen " .. commit_hash)
+				vim.cmd("CodeDiff " .. commit_hash)
 			end
 		end,
 
