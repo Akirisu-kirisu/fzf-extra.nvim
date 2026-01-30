@@ -192,8 +192,6 @@ M.DirDepth = function(opts)
 		["default"] = {
 			fn = function(selected)
 				-- if nothing is selected, do nothing
-
-				vim.fn.system({ "zoxide", "add", selected })
 				utils().open_oil(selected)
 			end,
 		},

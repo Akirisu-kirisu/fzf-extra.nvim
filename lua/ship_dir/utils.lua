@@ -465,6 +465,7 @@ function M.open_oil(selected)
 		if M.write_history then
 			M.write_history(S().directories_history)
 		end
+		vim.fn.system({ "zoxide", "add", selected_path })
 		vim.cmd("Oil " .. selected_path)
 		-- print("Changed directory to: " .. selected_path)
 	else
