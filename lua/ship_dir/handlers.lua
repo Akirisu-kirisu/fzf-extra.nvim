@@ -286,9 +286,9 @@ M.OpenFiles = function(opts)
 			local os_name = vim.loop.os_uname().sysname
 
 			-- Open the file based on OS
-			if os_name == "Darwin" then -- macOS
+			if os_name == "Darwin" then      -- macOS
 				os.execute("open " .. file)
-			elseif os_name == "Linux" then -- Linux
+			elseif os_name == "Linux" then   -- Linux
 				os.execute("xdg-open " .. file)
 			elseif os_name == "Windows_NT" then -- Windows
 				os.execute("start " .. file)
@@ -517,7 +517,7 @@ M.GitCommits = function(opts)
 	}
 
 	local git_log_cmd =
-		"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
+	"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
 
 	fzf_lua.fzf_exec(git_log_cmd, opts)
 end
@@ -754,7 +754,7 @@ M.OptsDevices = function()
 				-- If "Git Repos" is selected, call the fzf_dirs_git function to open another fzf
 				if selected[1] == "Hard Disk" then
 					M.HardDisk()
-				-- If "Links" is selected, you can add code to handle that case here
+					-- If "Links" is selected, you can add code to handle that case here
 				elseif selected[1] == "Removable Storage" then
 					M.Devices()
 					-- If "Links" is selected, you can add code to handle that case here
@@ -965,7 +965,9 @@ df -hP | awk '$1 ~ /^\/dev/ && $1 !~ /tmpfs/ && $6 != "/" {print $1 " - " $6}'
 					-- Trim the path if it's too long and add parentheses
 					local function trim_path(str, max_length)
 						if #str > max_length then
-							return "(" .. string.sub(str, 1, max_length - 3) .. "..." .. ")" -- Trim, add ellipsis, and wrap in parentheses
+							return "(" ..
+									string.sub(str, 1, max_length - 3) ..
+									"..." .. ")"  -- Trim, add ellipsis, and wrap in parentheses
 						else
 							return "(" .. str .. ")" -- Wrap the path in parentheses
 						end
@@ -1095,52 +1097,52 @@ M.HardDisk = function(opts)
 
 					-- Switch to the tmux client (optional)
 					vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-				-- if tmux_session_exists then
-				--   -- Check if tmux is running but user is detached
-				--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-				--   print("Switched to tmux session: " .. tmux_session_name)
-				-- ╭───────────────────────────────────────────────────────────────────╮
-				-- │ Check if the tmux session is detached                             │
-				-- ╰───────────────────────────────────────────────────────────────────╯
-				-- NOTE: This is not working - because it needs to
-				-- initiate a new tmux and then attach to it - which is not possible
-				-- if tmux is already running or not running
-				-- NOTE: Possible solution:
-				-- 1. Initiate a new tmux from the root terminal
-				-- 2. create a new buffer that runs the tmux and attach to it ane make the
-				-- terminal alacritty or something else initiate
-				-- the tmux
+					-- if tmux_session_exists then
+					--   -- Check if tmux is running but user is detached
+					--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+					--   print("Switched to tmux session: " .. tmux_session_name)
+					-- ╭───────────────────────────────────────────────────────────────────╮
+					-- │ Check if the tmux session is detached                             │
+					-- ╰───────────────────────────────────────────────────────────────────╯
+					-- NOTE: This is not working - because it needs to
+					-- initiate a new tmux and then attach to it - which is not possible
+					-- if tmux is already running or not running
+					-- NOTE: Possible solution:
+					-- 1. Initiate a new tmux from the root terminal
+					-- 2. create a new buffer that runs the tmux and attach to it ane make the
+					-- terminal alacritty or something else initiate
+					-- the tmux
 
-				-- local tmux_is_detached = vim.fn.system(
-				--   "tmux list-sessions -F '#{session_name}:#{session_attached}' | grep -E '^"
-				--     .. tmux_session_name
-				--     .. ":[0]$' 2>/dev/null"
-				-- ) ~= ""
-				--
-				-- print(
-				--   "DEBUGPRINT[1]: fzf.lua:381: tmux_is_detached="
-				--     .. vim.inspect(tmux_is_detached)
-				-- )
-				--
-				-- elseif tmux_is_detached then --not working
-				--   -- print("check " .. vim.fn.system "~/.config/nvim/lua/plugins/configs/fuzzy_finder/scripts-fzf/tmux.sh")
-				--   -- vim.fn.system "./scripts-fzf/tmux.sh"
-				--   -- vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-				--   print("Attached to tmux session: " .. tmux_session_name)
-				-- else
-				--   -- # Session doesn't exist, create a new one
-				--   vim.fn.system(
-				--     "tmu new-session -ds "
-				--       .. tmux_session_name
-				--       .. " -c "
-				--       .. tmux_session_name
-				--   )
-				--   -- Optionally, attach to the session (this is usually the expected behavior)
-				--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
-				--   print(
-				--     "Created and switched to new tmux session: " .. tmux_session_name
-				--   )
-				-- end
+					-- local tmux_is_detached = vim.fn.system(
+					--   "tmux list-sessions -F '#{session_name}:#{session_attached}' | grep -E '^"
+					--     .. tmux_session_name
+					--     .. ":[0]$' 2>/dev/null"
+					-- ) ~= ""
+					--
+					-- print(
+					--   "DEBUGPRINT[1]: fzf.lua:381: tmux_is_detached="
+					--     .. vim.inspect(tmux_is_detached)
+					-- )
+					--
+					-- elseif tmux_is_detached then --not working
+					--   -- print("check " .. vim.fn.system "~/.config/nvim/lua/plugins/configs/fuzzy_finder/scripts-fzf/tmux.sh")
+					--   -- vim.fn.system "./scripts-fzf/tmux.sh"
+					--   -- vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+					--   print("Attached to tmux session: " .. tmux_session_name)
+					-- else
+					--   -- # Session doesn't exist, create a new one
+					--   vim.fn.system(
+					--     "tmu new-session -ds "
+					--       .. tmux_session_name
+					--       .. " -c "
+					--       .. tmux_session_name
+					--   )
+					--   -- Optionally, attach to the session (this is usually the expected behavior)
+					--   vim.fn.system("tmux switch-client -t " .. tmux_session_name)
+					--   print(
+					--     "Created and switched to new tmux session: " .. tmux_session_name
+					--   )
+					-- end
 				else
 					-- If tmux is not available, just change directory in Vim
 					vim.cmd("cd " .. selected_path)
@@ -1336,9 +1338,9 @@ M.Api = function(opts)
 		"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
 		"https://restcountries.com/v3.1/all",
 		"https://v2.jokeapi.dev/joke/Programming",
-		"https://opentdb.com/api.php?amount=10&type=multiple", -- Changed to the actual URL for Neovim
+		"https://opentdb.com/api.php?amount=10&type=multiple",            -- Changed to the actual URL for Neovim
 		"https://gateway.marvel.com/v1/public/characters?apikey={API_KEY}", -- Changed to the actual URL for Neovim
-		"https://pokeapi.co/api/v2/pokemon/{id_or_name}", -- Fixed typo from "reedit.com"
+		"https://pokeapi.co/api/v2/pokemon/{id_or_name}",                 -- Fixed typo from "reedit.com"
 		"https://newsapi.org/v2/top-headlines?country=us&apiKey={API_KEY}", -- Changed to the actual URL for Neovim
 		"https://restcountries.com/v3.1/name/{country_name}",
 		"https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API_KEY}",
@@ -1413,13 +1415,13 @@ M.Links = function(opts)
 		},
 		{ alias = "https://dotfyle.com", path = "Neovim plugin manager and explorer." },
 		{ alias = "https://outlook.com", path = "Web-based email service by Microsoft." },
-		{ alias = "https://comick.io", path = "Online comic and manga reading platform." },
-		{ alias = "https://mgeko.cc", path = "Another online manga/comic platform." },
+		{ alias = "https://comick.io",   path = "Online comic and manga reading platform." },
+		{ alias = "https://mgeko.cc",    path = "Another online manga/comic platform." },
 		{
 			alias = "https://asuracomic.net",
 			path = "Site for reading translated manga and webtoons.",
 		},
-		{ alias = "https://gmail.com", path = "Google's email service." },
+		{ alias = "https://gmail.com",  path = "Google's email service." },
 		{ alias = "https://google.com", path = "Search engine and tech services provider." },
 		{
 			alias = "https://reddit.com",
@@ -1487,7 +1489,8 @@ M.Links = function(opts)
 			path = "base46",
 		},
 		{
-			alias = "https://onehack.st/t/public-apis-a-collective-list-of-free-apis-for-use-in-software-and-web-development/217098",
+			alias =
+			"https://onehack.st/t/public-apis-a-collective-list-of-free-apis-for-use-in-software-and-web-development/217098",
 			path = "api",
 		},
 	}
@@ -1507,6 +1510,103 @@ M.Links = function(opts)
 	fzf_lua.fzf_exec(fzf_entries, opts)
 end
 
+M.Imports = function(opts)
+	local fzf_lua = require("fzf-lua")
+	utils().last_selected(M.Links)
+	opts = opts or {}
+	opts.prompt = "Links> "
+
+	opts.actions = {
+		["alt-m"] = {
+			fn = function()
+				M.OptsMenu()
+			end,
+			exec_silent = true,
+		},
+		["ctrl-y"] = {
+			fn = function(selected)
+				-- if type(selected) == "table" then
+				-- 	selected = selected[1]
+				-- end
+				-- Copy to system clipboard
+				local selected_url = utils().selected_path(selected)
+				vim.fn.setreg("+", selected_url)
+				print("Copied to clipboard: " .. selected_url)
+			end,
+			exec_silent = true,
+		},
+		["default"] = {
+			fn = function(selected)
+				local function to_ident(name)
+					return name:gsub("[^%w_]", "_")
+				end
+
+				local entry = selected.value or selected[1]
+				local name = to_ident(vim.fn.fnamemodify(entry, ":t:r"))
+
+				local wrapper
+				if vim.startswith(entry, "src/") then
+					wrapper = string.format(
+						"import %s from '$lib/%s'",
+						name,
+						entry
+					)
+				else
+					wrapper = entry
+				end
+
+				print('DEBUGPRINT[7]: handlers.lua:1547: wrapper=' .. vim.inspect(wrapper))
+				vim.api.nvim_put({ wrapper }, "", true, true)
+			end
+			,
+		},
+	}
+
+	local imports = {}
+
+	-- command to collect files
+	local libs = "fd --type f --exclude node_modules --max-depth 6 . src/lib"
+
+	-- optional framework imports (keep if you plan to merge later)
+	local frameworkImports = {
+		"import { page } from '$app/state'",
+		"import { onMount } from '$app/state'",
+		"import { navigating } from '$app/state'",
+		"import { updated } from '$app/state'",
+		"import { env } from '$env/dynamic/public'",
+		"import { env as privateEnv } from '$env/dynamic/private'",
+		"import { browser, dev } from '$app/environment'",
+		"import { building, version } from '$app/environment'",
+		"import { PUBLIC_API_URL } from '$env/static/public'",
+		"import { SECRET_KEY } from '$env/static/private'",
+		"import { enhance } from '$app/forms'",
+		"import { error, redirect } from '@sveltejs/kit'",
+		"import { json } from '@sveltejs/kit'",
+		"import type { PageLoad, LayoutLoad } from './$types'",
+		"import type { Actions } from './$types'",
+		"import type { PageServerLoad } from './$types'",
+		"import { onMount, onDestroy, tick } from 'svelte'",
+		"import { writable, readable, derived } from 'svelte/store'",
+		"import { goto } from '$app/navigation'"
+	}
+
+	-- run command
+	local output = vim.fn.systemlist(libs)
+
+	-- collect results
+	for _, item in ipairs(output) do
+		table.insert(imports, item)
+	end
+
+	-- optional: prepend framework imports
+	for _, item in ipairs(frameworkImports) do
+		table.insert(imports, 1, item)
+	end
+
+	-- run fzf
+	fzf_lua.fzf_exec(imports, opts)
+end
+
 M.CmdLine = function(opts)
 	local fzf_lua = require("fzf-lua")
 	opts = opts or {}
@@ -1514,11 +1614,11 @@ M.CmdLine = function(opts)
 
 	-- Regex snippets with descriptions
 	local scripts = {
-		{ cmd = "'<,'>s/\\v(\\w+)\\s*=\\s*(\\w+)/\\2 = \\1/g", desc = "Swap LHS and RHS of assignments" },
-		{ cmd = "'<,'>s/\\v(.*):\\s*(.*)/\\2: \\1/g", desc = "Swap colon-separated key-value pairs" },
+		{ cmd = "'<,'>s/\\v(\\w+)\\s*=\\s*(\\w+)/\\2 = \\1/g",            desc = "Swap LHS and RHS of assignments" },
+		{ cmd = "'<,'>s/\\v(.*):\\s*(.*)/\\2: \\1/g",                     desc = "Swap colon-separated key-value pairs" },
 		{ cmd = "'<,'>s/\\v(\\d{4})-(\\d{2})-(\\d{2})/\\3\\/\\2\\/\\1/g", desc = "YYYY-MM-DD to DD/MM/YYYY" },
-		{ cmd = "set filetype?", desc = "fIletype" },
-		{ cmd = "set filetype=sh", desc = "sh" },
+		{ cmd = "set filetype?",                                          desc = "fIletype" },
+		{ cmd = "set filetype=sh",                                        desc = "sh" },
 	}
 
 	-- Format each item for display in fzf
@@ -2031,7 +2131,7 @@ M.GitRepo = function(opts)
 		command = [[ gh repo list --limit 100 --json name,owner | jq -r ".[] | .name" ]]
 	else
 		command =
-			[[ gh repo list --limit 100 --json name,owner | grep -oP '\"name\":\s*\"[^\"]+\"' | awk -F '\"' '{print $4}' ]]
+		[[ gh repo list --limit 100 --json name,owner | grep -oP '\"name\":\s*\"[^\"]+\"' | awk -F '\"' '{print $4}' ]]
 	end
 
 	-- Combine the list of GitHub repos with the custom repositories (add them to the list)

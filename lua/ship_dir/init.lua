@@ -28,6 +28,7 @@ function M.setup()
 		"GitRepo",
 		"DirHistory",
 		"ShadcnSearch",
+		"Imports",
 	}
 
 	for _, cmd in ipairs(commands) do
