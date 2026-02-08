@@ -2247,7 +2247,7 @@ M.DirHistory = function(opts)
 			-- 	selected = selected[1]
 			-- end
 
-			vim.fn.system({ "zoxide", "add", selected })
+			-- vim.fn.system({ "zoxide", "add", selected })
 			utils().open_dir_tmux(selected)
 		end,
 		["ctrl-y"] = {
