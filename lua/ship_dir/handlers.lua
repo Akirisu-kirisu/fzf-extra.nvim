@@ -242,30 +242,34 @@ M.DirDepth = function(opts)
 		end,
 	}
 
-	local fzf_list = {}
+	-- local fzf_list = {}
 	local fd_command = "fd --type d --exclude node_modules --max-depth 6 ."
 
 	-- Execute the 'fd' command and capture the output
-	local output = vim.fn.systemlist(fd_command)
+	local function fzf_lists(fzf_cb)
+		vim.fn.jobstart(fd_command, {
+			stdout_buffered = false,
+			on_stdout = function(_, data)
+				for _, line in ipairs(data) do
+					if line ~= "" then
+						local lastname = utils().get_last_name(line)
 
-	-- Iterate over the directories found by 'fd' and prepare them for fzf
-	for _, subdir in ipairs(output) do
-		if vim.fn.isdirectory(subdir) == 1 then
-			local lastname = utils().get_last_name(subdir)
-			local path = subdir
+						local dir =  {
+							alias = lastname,
+							path = line,
+						}
 
-			table.insert(fzf_list, { alias = lastname, path = path })
-		end
+						local formatted = ui().format_directory_output(dir, 60, true)
+						fzf_cb(formatted)
+					end
+				end
+			end,
+			on_exit = function()
+				fzf_cb()
+			end,
+		})
 	end
-
-	ui().calculate_padding(fzf_list)
-	local formatted_list = {}
-	for _, subdir in ipairs(fzf_list) do
-		local formatted_ui = ui().format_directory_output(subdir, ui().max_path_len)
-		table.insert(formatted_list, formatted_ui)
-	end
-
-	fzf_lua.fzf_exec(formatted_list, opts)
+	fzf_lua.fzf_exec(fzf_lists, opts)
 end
 
 M.OpenFiles = function(opts)
@@ -286,9 +290,9 @@ M.OpenFiles = function(opts)
 			local os_name = vim.loop.os_uname().sysname
 
 			-- Open the file based on OS
-			if os_name == "Darwin" then      -- macOS
+			if os_name == "Darwin" then -- macOS
 				os.execute("open " .. file)
-			elseif os_name == "Linux" then   -- Linux
+			elseif os_name == "Linux" then -- Linux
 				os.execute("xdg-open " .. file)
 			elseif os_name == "Windows_NT" then -- Windows
 				os.execute("start " .. file)
@@ -517,7 +521,7 @@ M.GitCommits = function(opts)
 	}
 
 	local git_log_cmd =
-	"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
+		"git log --pretty=format:'%C(yellow)%h %Cgreen%ad %Cblue%an%Creset %s' --date=short --color=always"
 
 	fzf_lua.fzf_exec(git_log_cmd, opts)
 end
@@ -965,9 +969,7 @@ df -hP | awk '$1 ~ /^\/dev/ && $1 !~ /tmpfs/ && $6 != "/" {print $1 " - " $6}'
 					-- Trim the path if it's too long and add parentheses
 					local function trim_path(str, max_length)
 						if #str > max_length then
-							return "(" ..
-									string.sub(str, 1, max_length - 3) ..
-									"..." .. ")"  -- Trim, add ellipsis, and wrap in parentheses
+							return "(" .. string.sub(str, 1, max_length - 3) .. "..." .. ")" -- Trim, add ellipsis, and wrap in parentheses
 						else
 							return "(" .. str .. ")" -- Wrap the path in parentheses
 						end
@@ -1338,9 +1340,9 @@ M.Api = function(opts)
 		"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
 		"https://restcountries.com/v3.1/all",
 		"https://v2.jokeapi.dev/joke/Programming",
-		"https://opentdb.com/api.php?amount=10&type=multiple",            -- Changed to the actual URL for Neovim
+		"https://opentdb.com/api.php?amount=10&type=multiple", -- Changed to the actual URL for Neovim
 		"https://gateway.marvel.com/v1/public/characters?apikey={API_KEY}", -- Changed to the actual URL for Neovim
-		"https://pokeapi.co/api/v2/pokemon/{id_or_name}",                 -- Fixed typo from "reedit.com"
+		"https://pokeapi.co/api/v2/pokemon/{id_or_name}", -- Fixed typo from "reedit.com"
 		"https://newsapi.org/v2/top-headlines?country=us&apiKey={API_KEY}", -- Changed to the actual URL for Neovim
 		"https://restcountries.com/v3.1/name/{country_name}",
 		"https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API_KEY}",
@@ -1415,13 +1417,13 @@ M.Links = function(opts)
 		},
 		{ alias = "https://dotfyle.com", path = "Neovim plugin manager and explorer." },
 		{ alias = "https://outlook.com", path = "Web-based email service by Microsoft." },
-		{ alias = "https://comick.io",   path = "Online comic and manga reading platform." },
-		{ alias = "https://mgeko.cc",    path = "Another online manga/comic platform." },
+		{ alias = "https://comick.io", path = "Online comic and manga reading platform." },
+		{ alias = "https://mgeko.cc", path = "Another online manga/comic platform." },
 		{
 			alias = "https://asuracomic.net",
 			path = "Site for reading translated manga and webtoons.",
 		},
-		{ alias = "https://gmail.com",  path = "Google's email service." },
+		{ alias = "https://gmail.com", path = "Google's email service." },
 		{ alias = "https://google.com", path = "Search engine and tech services provider." },
 		{
 			alias = "https://reddit.com",
@@ -1489,8 +1491,7 @@ M.Links = function(opts)
 			path = "base46",
 		},
 		{
-			alias =
-			"https://onehack.st/t/public-apis-a-collective-list-of-free-apis-for-use-in-software-and-web-development/217098",
+			alias = "https://onehack.st/t/public-apis-a-collective-list-of-free-apis-for-use-in-software-and-web-development/217098",
 			path = "api",
 		},
 	}
@@ -1546,19 +1547,14 @@ M.Imports = function(opts)
 
 				local wrapper
 				if vim.startswith(entry, "src/") then
-					wrapper = string.format(
-						"import %s from '$lib/%s'",
-						name,
-						entry
-					)
+					wrapper = string.format("import %s from '$lib/%s'", name, entry)
 				else
 					wrapper = entry
 				end
 
-				print('DEBUGPRINT[7]: handlers.lua:1547: wrapper=' .. vim.inspect(wrapper))
+				print("DEBUGPRINT[7]: handlers.lua:1547: wrapper=" .. vim.inspect(wrapper))
 				vim.api.nvim_put({ wrapper }, "", true, true)
-			end
-			,
+			end,
 		},
 	}
 
@@ -1587,7 +1583,7 @@ M.Imports = function(opts)
 		"import type { PageServerLoad } from './$types'",
 		"import { onMount, onDestroy, tick } from 'svelte'",
 		"import { writable, readable, derived } from 'svelte/store'",
-		"import { goto } from '$app/navigation'"
+		"import { goto } from '$app/navigation'",
 	}
 
 	-- run command
@@ -1614,11 +1610,14 @@ M.CmdLine = function(opts)
 
 	-- Regex snippets with descriptions
 	local scripts = {
-		{ cmd = "'<,'>s/\\v(\\w+)\\s*=\\s*(\\w+)/\\2 = \\1/g",            desc = "Swap LHS and RHS of assignments" },
-		{ cmd = "'<,'>s/\\v(.*):\\s*(.*)/\\2: \\1/g",                     desc = "Swap colon-separated key-value pairs" },
+		{ cmd = "'<,'>s/\\v(\\w+)\\s*=\\s*(\\w+)/\\2 = \\1/g", desc = "Swap LHS and RHS of assignments" },
+		{
+			cmd = "'<,'>s/\\v(.*):\\s*(.*)/\\2: \\1/g",
+			desc = "Swap colon-separated key-value pairs",
+		},
 		{ cmd = "'<,'>s/\\v(\\d{4})-(\\d{2})-(\\d{2})/\\3\\/\\2\\/\\1/g", desc = "YYYY-MM-DD to DD/MM/YYYY" },
-		{ cmd = "set filetype?",                                          desc = "fIletype" },
-		{ cmd = "set filetype=sh",                                        desc = "sh" },
+		{ cmd = "set filetype?", desc = "fIletype" },
+		{ cmd = "set filetype=sh", desc = "sh" },
 	}
 
 	-- Format each item for display in fzf
@@ -2131,7 +2130,7 @@ M.GitRepo = function(opts)
 		command = [[ gh repo list --limit 100 --json name,owner | jq -r ".[] | .name" ]]
 	else
 		command =
-		[[ gh repo list --limit 100 --json name,owner | grep -oP '\"name\":\s*\"[^\"]+\"' | awk -F '\"' '{print $4}' ]]
+			[[ gh repo list --limit 100 --json name,owner | grep -oP '\"name\":\s*\"[^\"]+\"' | awk -F '\"' '{print $4}' ]]
 	end
 
 	-- Combine the list of GitHub repos with the custom repositories (add them to the list)
@@ -2308,10 +2307,7 @@ M.ShadcnSearch = function()
 				local function run_add_components()
 					local task = overseer.new_task({
 						name = "Shadcn: Add components",
-						cmd = string.format(
-							"bun x shadcn-svelte@latest add %s",
-							components
-						),
+						cmd = string.format("bun x shadcn-svelte@latest add %s", components),
 						on_exit = function(code)
 							if code == 0 then
 								vim.notify("✅ Shadcn components added")
@@ -2332,11 +2328,7 @@ M.ShadcnSearch = function()
 				end
 
 				-- Ask user
-				local ok = vim.fn.confirm(
-					"Shadcn is not initialized.\nInitialize shadcn + Tailwind?",
-					"&Yes\n&No",
-					1
-				)
+				local ok = vim.fn.confirm("Shadcn is not initialized.\nInitialize shadcn + Tailwind?", "&Yes\n&No", 1)
 
 				if ok ~= 1 then
 					vim.notify("Skipping shadcn init")
