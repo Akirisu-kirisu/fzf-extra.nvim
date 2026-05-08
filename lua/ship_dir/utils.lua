@@ -1,5 +1,4 @@
-
-local H = require('ship_dir.handlers')
+local H = require("ship_dir.handlers")
 
 local function S()
 	return require("ship_dir.directories")
@@ -67,44 +66,44 @@ function M.get_second_last_name(path)
 end
 
 function M.selected_path(selected)
-    -- nothing selected or empty table
-    if not selected or (type(selected) == "table" and #selected == 0) then
-        return nil
-    end
+	-- nothing selected or empty table
+	if not selected or (type(selected) == "table" and #selected == 0) then
+		return nil
+	end
 
-    -- if selected is a string
-    if type(selected) == "string" then
-        local path = selected[1]
-        -- match ⟨…⟩ pattern
-        local m = path:match("⟨(.-)⟩")
-        if m then
-            return m
-        end
-        -- remove leading icon if present
-        path = path:gsub(" ", "")
-        return path ~= "" and path or nil
-    end
+	-- if selected is a string
+	if type(selected) == "string" then
+		local path = selected[1]
+		-- match ⟨…⟩ pattern
+		local m = path:match("⟨(.-)⟩")
+		if m then
+			return m
+		end
+		-- remove leading icon if present
+		path = path:gsub(" ", "")
+		return path ~= "" and path or nil
+	end
 
-    -- if selected is a table
-    if type(selected) == "table" then
-        local path = selected[1]
-        if not path or path == "" then
-            return nil
-        end
+	-- if selected is a table
+	if type(selected) == "table" then
+		local path = selected[1]
+		if not path or path == "" then
+			return nil
+		end
 
-        -- match ⟨…⟩ pattern
-        local m = path:match("⟨(.-)⟩")
-        if m then
-            path = m
-        else
-            -- remove leading icon if present
-            path = path:gsub(" ", "")
-        end
+		-- match ⟨…⟩ pattern
+		local m = path:match("⟨(.-)⟩")
+		if m then
+			path = m
+		else
+			-- remove leading icon if present
+			path = path:gsub(" ", "")
+		end
 
-        return path ~= "" and path or nil
-    end
+		return path ~= "" and path or nil
+	end
 
-    return nil
+	return nil
 end
 
 -- function M.selected_path(selected)
@@ -218,7 +217,7 @@ function M.open_dir(selected)
 
 		state.current_back_index = (state.current_back_index or 0) + 1
 		if S().directories_temp_back[#S().directories_temp_back] ~= selected_path then
-			table.insert(S().directories_temp_back, {path= selected_path, alias = state.current_back_index})
+			table.insert(S().directories_temp_back, { path = selected_path, alias = state.current_back_index })
 		end
 
 		-- Inform zoxide
@@ -246,7 +245,7 @@ end
 
 function M.open_dir_tmux(selected)
 	local selected_path = M.selected_path(selected)
-  print('DEBUGPRINT[229]: utils.lua:248: selected_path=' .. vim.inspect(selected_path))
+	print("DEBUGPRINT[229]: utils.lua:248: selected_path=" .. vim.inspect(selected_path))
 
 	local tmux_session_name
 
@@ -443,7 +442,6 @@ function M.open_dir_tmux(selected)
 	end
 end
 
-
 function M.captures_parentheses_copy(selected)
 	-- print('DEBUGPRINT[202]: actions.lua:156: selected=' .. vim.inspect(selected))
 	local selected_path = M.selected_path(selected)
@@ -501,100 +499,99 @@ end
 -- -- ╰───────────────────────────────────────────────────────────────────╯
 
 function M.merge_zoxide_into_history()
-  local history = S().directories_history or {}
-  local zoxide = M.read_zoxide_scored()
-  -- print('DEBUGPRINT[232]: utils.lua:504: zoxide=' .. vim.inspect(zoxide))
+	local history = S().directories_history or {}
+	local zoxide = M.read_zoxide_scored()
+	-- print('DEBUGPRINT[232]: utils.lua:504: zoxide=' .. vim.inspect(zoxide))
 
-  local seen = {}
-  local merged = {}
+	local seen = {}
+	local merged = {}
 
-  -- 1. Keep MRU order exactly
-  for _, dir in ipairs(history) do
-    dir = M.normalize_selection(vim.fn.expand(dir):gsub("/+$", ""))
-    merged[#merged + 1] = dir
-    seen[dir] = true
-  end
+	-- 1. Keep MRU order exactly
+	for _, dir in ipairs(history) do
+		dir = M.normalize_selection(vim.fn.expand(dir):gsub("/+$", ""))
+		merged[#merged + 1] = dir
+		seen[dir] = true
+	end
 
-  -- 2. Append missing zoxide dirs
-  local scored = {}
-  for dir, score in pairs(zoxide) do
-    dir = M.normalize_selection(vim.fn.expand(dir):gsub("/+$", ""))
+	-- 2. Append missing zoxide dirs
+	local scored = {}
+	for dir, score in pairs(zoxide) do
+		dir = M.normalize_selection(vim.fn.expand(dir):gsub("/+$", ""))
 
-    if not seen[dir] and vim.fn.isdirectory(dir) == 1 then
-      table.insert(scored, { dir = dir, score = score })
-    end
-  end
+		if not seen[dir] and vim.fn.isdirectory(dir) == 1 then
+			table.insert(scored, { dir = dir, score = score })
+		end
+	end
 
-  table.sort(scored, function(a, b)
-    return a.score > b.score
-  end)
+	table.sort(scored, function(a, b)
+		return a.score > b.score
+	end)
 
-  for _, item in ipairs(scored) do
-    table.insert(merged, item.dir)
-    seen[item.dir] = true
-  end
+	for _, item in ipairs(scored) do
+		table.insert(merged, item.dir)
+		seen[item.dir] = true
+	end
 
-  S().directories_history = merged
+	S().directories_history = merged
 end
 
-
 function M.prepend_current_dir(list)
-  local cwd = utils().normalize_selection(vim.fn.getcwd())
+	local cwd = utils().normalize_selection(vim.fn.getcwd())
 
-  -- Remove if already present
-  for i, dir in ipairs(list) do
-    if dir == cwd then
-      table.remove(list, i)
-      break
-    end
-  end
+	-- Remove if already present
+	for i, dir in ipairs(list) do
+		if dir == cwd then
+			table.remove(list, i)
+			break
+		end
+	end
 
-  table.insert(list, 1, cwd)
-  return list
+	table.insert(list, 1, cwd)
+	return list
 end
 
 function M.push_history_dir(dir)
-  dir = utils().normalize_selection(dir)
-  if not dir or vim.fn.isdirectory(dir) ~= 1 then
-    return
-  end
+	dir = utils().normalize_selection(dir)
+	if not dir or vim.fn.isdirectory(dir) ~= 1 then
+		return
+	end
 
-  local history = S().directories_history or {}
-  local new = { dir }
+	local history = S().directories_history or {}
+	local new = { dir }
 
-  -- Remove duplicates
-  for _, d in ipairs(history) do
-    if d ~= dir then
-      table.insert(new, d)
-    end
-  end
+	-- Remove duplicates
+	for _, d in ipairs(history) do
+		if d ~= dir then
+			table.insert(new, d)
+		end
+	end
 
-  -- Cap size
-  local MAX = 50
-  while #new > MAX do
-    table.remove(new)
-  end
+	-- Cap size
+	local MAX = 50
+	while #new > MAX do
+		table.remove(new)
+	end
 
-  S().directories_history = new
+	S().directories_history = new
 end
 
 function M.push_recent_dir(dir)
-  local recent = S().recent_dirs or {}
-  local new = { dir }
+	local recent = S().recent_dirs or {}
+	local new = { dir }
 
-  -- Remove duplicates
-  for _, d in ipairs(recent) do
-    if d ~= dir then
-      table.insert(new, d)
-    end
-  end
+	-- Remove duplicates
+	for _, d in ipairs(recent) do
+		if d ~= dir then
+			table.insert(new, d)
+		end
+	end
 
-  -- Keep only last 2
-  while #new > 10 do
-    table.remove(new)
-  end
+	-- Keep only last 2
+	while #new > 10 do
+		table.remove(new)
+	end
 
-  S().recent_dirs = new
+	S().recent_dirs = new
 end
 
 -- function M.normalize_selection(sel)
@@ -602,93 +599,98 @@ end
 --   return sel:gsub("^%s*[^/%w~.-]+%s*", "")
 -- end
 function M.get_selected_string(selected)
-  if type(selected) == "string" then
-    return selected
-  end
+	if type(selected) == "string" then
+		return selected
+	end
 
-  if type(selected) == "table" then
-    return selected[1]
-  end
+	if type(selected) == "table" then
+		return selected[1]
+	end
 
-  return nil
+	return nil
 end
 
 function M.normalize_selection(sel)
-  if type(sel) ~= "string" then
-    return nil
-  end
+	if type(sel) ~= "string" then
+		return nil
+	end
 
-  -- Remove anything before the path (/ or ~)
-  return sel:gsub("^.-(%f[/~])", "%1")
+	-- Remove anything before the path (/ or ~)
+	return sel:gsub("^.-(%f[/~])", "%1")
 end
-
 
 function M.read_zoxide_scored()
-  local dirs = {}
-  local lines = vim.fn.systemlist("zoxide query -ls 2>/dev/null")
+	local dirs = {}
 
-  for _, line in ipairs(lines) do
-    -- print("DEBUG: zoxide line =", line)
-    local score, path = line:match("^%s*(%S+)%s+(.+)$")
-    if score and path then
-      path = vim.fn.expand(path):gsub("/+$", "")
-      if vim.fn.isdirectory(path) == 1 then
-        dirs[path] = tonumber(score) or 0
-      end
-    end
-  end
+	local lines
+	if vim.fn.has("win32") == 1 then
+		-- Command for Windows
+		lines = vim.fn.systemlist("zoxide query --list")
+	else
+		-- Command for Linux / macOS
+		lines = vim.fn.systemlist("zoxide query -ls 2>/dev/null")
+	end
 
-  return dirs
+	for _, line in ipairs(lines) do
+		-- print("DEBUG: zoxide line =", line)
+		local score, path = line:match("^%s*(%S+)%s+(.+)$")
+		if score and path then
+			path = vim.fn.expand(path):gsub("/+$", "")
+			if vim.fn.isdirectory(path) == 1 then
+				dirs[path] = tonumber(score) or 0
+			end
+		end
+	end
+
+	return dirs
 end
 
-
-M.history_file = vim.fn.stdpath "cache" .. "/dirs_history.txt"
-
+M.history_file = vim.fn.stdpath("cache") .. "/dirs_history.txt"
 
 function M.read_history()
-  local dirs = {}
-  local seen = {}
+	local dirs = {}
+	local seen = {}
 
-  local file = io.open(M.history_file, "r")
-  if file then
-    for line in file:lines() do
-      local dir = vim.fn.expand(line):gsub("/+$", "")
-      if vim.fn.isdirectory(dir) == 1 and not seen[dir] then
-        table.insert(dirs, dir)
-        seen[dir] = true
-      end
-    end
-    file:close()
-  end
+	local file = io.open(M.history_file, "r")
+	if file then
+		for line in file:lines() do
+			local dir = vim.fn.expand(line):gsub("/+$", "")
+			if vim.fn.isdirectory(dir) == 1 and not seen[dir] then
+				table.insert(dirs, dir)
+				seen[dir] = true
+			end
+		end
+		file:close()
+	end
 
-  return dirs
+	return dirs
 end
 
 function M.write_history(dirs)
-  local file = io.open(M.history_file, "w")
-  if not file then
-    print("⚠ Could not open history file for writing.")
-    return
-  end
+	local file = io.open(M.history_file, "w")
+	if not file then
+		print("⚠ Could not open history file for writing.")
+		return
+	end
 
-  for _, dir in ipairs(dirs) do
-    file:write(dir .. "\n")
-  end
+	for _, dir in ipairs(dirs) do
+		file:write(dir .. "\n")
+	end
 
-  file:close()
+	file:close()
 end
 
 --
 function M.add_current_dir_to_history()
-  -- local cwd = vim.fn.getcwd()
-  -- if vim.fn.isdirectory(cwd) == 1 then
-  --   S().directories_history[cwd] = true
-  -- end
-  M.push_history_dir(vim.fn.getcwd())
+	-- local cwd = vim.fn.getcwd()
+	-- if vim.fn.isdirectory(cwd) == 1 then
+	--   S().directories_history[cwd] = true
+	-- end
+	M.push_history_dir(vim.fn.getcwd())
 end
 
 vim.api.nvim_create_autocmd({ "VimLeavePre", "DirChanged" }, {
-  callback = M.add_current_dir_to_history,
+	callback = M.add_current_dir_to_history,
 })
 
 S().directories_history = M.read_history()
@@ -699,9 +701,9 @@ M.write_history(S().directories_history)
 
 -- 👇 Ensure any changes during session are written at exit
 vim.api.nvim_create_autocmd("VimLeavePre", {
-  callback = function()
-    M.write_history(S().directories_history)
-  end,
+	callback = function()
+		M.write_history(S().directories_history)
+	end,
 })
 
 return M
